@@ -1,0 +1,2 @@
+# Exclude example diagram assets and templates from threat scanner
+assets/

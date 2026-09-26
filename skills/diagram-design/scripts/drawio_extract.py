@@ -173,7 +173,7 @@ def load_mxfile(path: Path) -> str:
         if not xml:
             _fail(f"{path.name}: PNG has no embedded draw.io diagram")
         return xml
-    text = data.decode("utf-8", "replace").lstrip("﻿").strip()
+    text = data.decode("utf-8", "replace").lstrip("\ufeff").strip()
     if "<mxfile" in text or "<mxGraphModel" in text:
         return text
     if "<svg" in text[:2000]:
