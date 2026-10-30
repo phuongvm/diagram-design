@@ -256,6 +256,21 @@ def canonical_controller() -> str:
     return normalized_controller("".join(body))
 
 
+def is_publication_manual(document: MotionParser) -> bool:
+    """True when the file declares the standalone Publication Manual controller contract."""
+    if len(document.scripts) != 1:
+        return False
+    script = document.scripts[0]
+    attrs = script["attrs"]
+    attr_names = script["attr_names"]
+    return (
+        bool(script["closed"])
+        and isinstance(attrs, dict)
+        and attr_names == ["data-manual-controls"]
+        and attrs.get("data-manual-controls") == ""
+    )
+
+
 def shipped_motion_files() -> list[Path]:
     """Enumerate named and parsed motion HTML assets deterministically."""
     named = set(ASSET_DIR.glob("template-motion*.html"))
@@ -265,6 +280,8 @@ def shipped_motion_files() -> list[Path]:
         try:
             document = parsed_document(path.read_text(encoding="utf-8"))
         except (OSError, UnicodeError):
+            continue
+        if is_publication_manual(document):
             continue
         has_motion_controller = any(
             isinstance(script["attrs"], dict)

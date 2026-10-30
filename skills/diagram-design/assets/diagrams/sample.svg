@@ -1,0 +1,44 @@
+<svg role="img" aria-labelledby="manual-sample-title manual-sample-desc" viewBox="0 0 1000 200" xmlns="http://www.w3.org/2000/svg">
+  <title id="manual-sample-title">Sample three-step flow</title>
+  <desc id="manual-sample-desc">Three boxes joined left to right by arrows, with the middle step highlighted as the focal element.</desc>
+  <defs>
+    <style>
+      :root {
+        --svg-paper: #f5f5f5;
+        --svg-surface: #ffffff;
+        --svg-panel: #eceef2;
+        --svg-ink: #2d3142;
+        --svg-muted: #4f5d75;
+        --svg-soft: #7a8399;
+        --svg-rule: rgba(45, 49, 66, 0.14);
+        --svg-accent: #eb6c36;
+        --svg-accent-tint: rgba(235, 108, 54, 0.08);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --svg-paper: #11151f;
+          --svg-surface: #1e2434;
+          --svg-panel: #171c29;
+          --svg-ink: #eef1f8;
+          --svg-muted: #a6b0c3;
+          --svg-soft: #8e98ac;
+          --svg-rule: rgba(238, 241, 248, 0.14);
+          --svg-accent: #f08a59;
+          --svg-accent-tint: rgba(240, 138, 89, 0.14);
+        }
+      }
+    </style>
+    <marker id="manual-sample-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="var(--svg-muted, #4f5d75)"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="var(--svg-paper, #f5f5f5)"/>
+  <line x1="280" y1="100" x2="396" y2="100" stroke="var(--svg-muted, #4f5d75)" stroke-width="1" marker-end="url(#manual-sample-arrow)"/>
+  <line x1="600" y1="100" x2="716" y2="100" stroke="var(--svg-muted, #4f5d75)" stroke-width="1" marker-end="url(#manual-sample-arrow)"/>
+  <rect x="80" y="68" width="200" height="64" rx="6" fill="var(--svg-surface, #ffffff)" stroke="var(--svg-ink, #2d3142)" stroke-width="1"/>
+  <text x="180" y="104" fill="var(--svg-ink, #2d3142)" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Step one</text>
+  <rect x="400" y="68" width="200" height="64" rx="6" fill="var(--svg-accent-tint, rgba(235, 108, 54, 0.08))" stroke="var(--svg-accent, #eb6c36)" stroke-width="1"/>
+  <text x="500" y="104" fill="var(--svg-ink, #2d3142)" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Step two</text>
+  <rect x="720" y="68" width="200" height="64" rx="6" fill="var(--svg-surface, #ffffff)" stroke="var(--svg-ink, #2d3142)" stroke-width="1"/>
+  <text x="820" y="104" fill="var(--svg-ink, #2d3142)" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Step three</text>
+</svg>

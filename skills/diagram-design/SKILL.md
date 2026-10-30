@@ -129,7 +129,7 @@ Rules of thumb:
 - If two types seem useful, pick the dominant axis; a semantic pattern may add behavior-specific primitives, not a second layout grammar.
 - If you're past the complexity budget (§7), split into an overview + detail.
 
-**Always load the chosen type reference linked in the guide before drawing.** When routed above, also load `semantic-patterns.md`; when animation is chosen, load `animation.md`.
+**Always load the chosen type reference linked in the guide before drawing.** When routed above, also load `semantic-patterns.md`; when animation is chosen, load `animation.md`. For multi-agent swarms, relay topologies, and cross-node meshes, see [`references/multi-agent-system-diagrams.md`](references/multi-agent-system-diagrams.md).
 
 ### Confirm before drawing
 
@@ -155,6 +155,7 @@ These mark "AI slop" schematics of any type:
 | Coral on every "important" node | Coral is 1–2 editorial accents, not a signaling system |
 | Reproducing Mermaid's renderer layout | Imports automatic spacing and routing instead of making an editorial layout |
 | Any breach of the six §6 connector rules | Diagonal slants, labels touching their stroke, masks clipped by a later node, overlapping paths, shared attach points, transit behind a non-endpoint box — each is an automatic fail; §6 states them in full |
+| Single-diagram overview + prose dump | Fails to show subsystem lifecycles and interactions. Decompose into specialized deep-dive diagrams per component using dedicated visual types. |
 
 Type-specific anti-patterns live in each type reference linked in the guide.
 
@@ -488,7 +489,7 @@ Run before producing any diagram.
 - [ ] No vertical `writing-mode` text?
 - [ ] `viewBox` expanded for the legend strip (~60px)?
 - [ ] Every font size, coord, width, height, gap divisible by 4?
-- [ ] From the installed skill directory, did `python3 scripts/self_check.py <file>` pass? (Accessible-SVG contract, single-file safety, motion basics.)
+- [ ] From the installed skill directory (or `<workspace-root>/.agents/skills/diagram-design/scripts/self_check.py` when invoking from workspace root), did `python3 scripts/self_check.py <file>` pass on all generated `.html` and `.svg` files? (Accessible-SVG contract, single-file safety, motion basics.)
 - [ ] If animated, does the complete static/no-JS frame work, does reduced motion hide/disable playback, and is the controller copied verbatim from `assets/template-motion.html`? From a repository checkout, also run `python3 <repo-root>/scripts/verify-motion.py path/to/generated.html` plus the skin linter; from an installed skill, manually check print and static-query states on top of the self-check.
 
 **Typography:**
@@ -511,6 +512,7 @@ Every diagram ships in three variants (see `assets/`):
 | **Minimal light** (default) | `assets/template.html`, `example-<type>.html` | Screenshot-ready. Diagram + title. Warm paper. |
 | **Minimal dark** | `assets/template-dark.html`, `example-<type>-dark.html` | Dark mode sites, slides, high-contrast posts. |
 | **Full editorial** | `assets/template-full.html`, `example-<type>-full.html` | Long-form posts where the diagram is the hero. |
+| **Publication Manual** (2-column) | `assets/template-manual.html` | Multi-section guides, runbooks and portal indexes that embed several diagrams plus tables and code. Sticky top-nav, 260px sticky `toc-sidebar` + `1fr` article, `report-meta-badge`, `metadata-grid`, `callout-box`, packaged `diagram-container` figures. One-column `template-full.html` is for single-hero diagrams only. |
 | **Consultant special** (quadrant only) | `example-quadrant-consultant.html` | BCG/McKinsey-style 2×2 scenario matrix. Clinical sans-serif, white bg, bold blue double-ended axes, named scenario cells. See [type-quadrant.md](references/type-quadrant.md#consultant-special-2x2-scenario-matrix). |
 
 **Sketchy variant** (optional, applied to any of the above) — see [primitive-sketchy.md](references/primitive-sketchy.md). SVG turbulence filter wobbles strokes for a hand-drawn feel. Good for essays, not for technical docs.
@@ -518,6 +520,29 @@ Every diagram ships in three variants (see `assets/`):
 **Terminal variant** (optional, replaces any of the above) — see [primitive-terminal.md](references/primitive-terminal.md). Start from `assets/template-terminal.html`; terminal examples use the `example-<type>-terminal.html` naming pattern. Charcoal CLI-window chrome, monospace, one red-orange accent. Good for dev-tool posts; not brand-tokenized, so skip it for onboarded output.
 
 **Animation** (optional presentation layer) — see [animation.md](references/animation.md). Modes are `none` (default), `reveal`, `step`, and `loop`; motion never changes the static meaning or raises the complexity budget.
+
+### Publication Manual layout (`assets/template-manual.html`)
+
+Start from `assets/template-manual.html` for any document that has more than one section or more than one diagram. Required structure, in order:
+
+1. `nav.top-nav` — brand link to `index.html` plus sibling-document buttons; the active page carries `class="current"`.
+2. `div.layout-frame` — CSS grid `260px 1fr`; collapses to one column under 900px.
+3. `aside.toc-sidebar` — sticky, lists every `section[id]` of the article; use `.toc-group` labels for grouped portals.
+4. `article` — `div.report-meta-badge` (doc ID, edition), `h1.report-title`, `div.metadata-grid` (`.meta-item` label/value pairs), `div.callout-box` with the one-paragraph summary.
+5. Sections — `h2.section-heading`, then figures packaged as `div.diagram-container` > `div.diagram-header` (figure number and `VISUAL PATTERN` tag) + `div.diagram-viewport` (inline `<svg>`) + `div.diagram-caption` (takeaway and link to the standalone `diagrams/<slug>.svg`). Tables go in `div.table-container`; commands in dark `pre > code`.
+6. `footer` — document reference line.
+
+Rules: keep every inline SVG unchanged when migrating an older page; keep existing section and row anchor IDs (`#skill-*`, `#os-*`, `#fig-*`) and cross-links valid; vary only `--doc-accent` / `--doc-accent-tint` per document; add no external framework. The one permitted script is the canonical `<script data-manual-controls>` copied verbatim from the template. Verify with `python3 scripts/self_check.py <file>` plus a check that every local `href` and `#anchor` resolves.
+
+**Interactive controls** (all inert without JS; the page reads complete as static HTML):
+
+- `[data-toc-toggle]` in `.top-nav` collapses the sidebar to a full-width article (also the `[` key); omit it on single-column pages. `[data-theme-toggle]` pins `html[data-theme="light"|"dark"]`; both persist in `localStorage`.
+- **Adaptive Dark/Light `--svg-*` diagram tokens:** Every Publication Manual declares the semantic `--svg-*` token set (`--svg-paper`, `--svg-surface`, `--svg-panel`, `--svg-ink`, `--svg-muted`, `--svg-soft`, `--svg-rule`, `--svg-accent`, `--svg-accent-tint`, `--svg-green`, `--svg-green-tint`, `--svg-blue`, `--svg-blue-tint`, `--svg-purple`, `--svg-purple-tint`, `--svg-amber`, `--svg-amber-tint`, `--svg-red`, `--svg-red-tint`) in `:root`, `@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) }`, and `html[data-theme="dark"]`. `.diagram-viewport` uses `background: var(--svg-paper)` (never hardcoded `#f5f5f5`/`#ffffff`), and inline `<svg>` elements use `var(--svg-*, <fallback>)` for fills, strokes, text, and markers so dark theme flips diagrams seamlessly.
+- Exactly one document-level `<dialog data-diagram-modal>` (with one `[data-diagram-modal-body]`, a `[data-diagram-close]`) per page. Each figure root gets exactly one `[data-diagram-open]` in its `.diagram-header`; the controller reparents the live root into the dialog and back, so SVG ids stay unique.
+- Ordered-narrative figures use `data-motion-mode="step"` (3..7 steps, at most 2 items per step, loads complete at `step = count`) with one `[data-motion-controls]` bar and one `.diagram-annotation-banner[data-motion-status]` inside the root but outside the controls. Matrices, legends and inventories use `data-motion-mode="none" data-step-count="0"` with the opener only.
+- `.is-current` emphasis is an accent stroke plus contrast, never a shadow or glow. One `<noscript>`, one `@media print` and one `prefers-reduced-motion: reduce` block per document.
+
+**Controller update procedure:** edit the controller only in `assets/template-manual.html`, then `python3 scripts/sync_manual_controls.py --write <pages>`, `--check <template> <pages>` (prints `DIVERGENT: <path>`), `python3 scripts/check_manual_selectors.py <pages>` (prints `OK` or one violation per line) and `self_check.py` over every page.
 
 ### To create a new diagram
 
@@ -564,6 +589,12 @@ Always produce a single self-contained `.html` file:
 - Embedded CSS (no external except Google Fonts)
 - Inline SVG (no external images)
 - Static by default; minimal inline JavaScript only for explicit animation controls/state
+- Output location: In repositories with an established documentation tree, save diagrams directly under the designated docs directory (e.g. `docs/diagrams/`) rather than the workspace root.
+- **Multi-diagram documentation deliverable pattern**: When creating a composite HTML document covering multiple system diagrams, embed each `<svg>` inline directly into the document. Never use `<object>`, `<img>`, or `<iframe>` tags (strictly flagged by `self_check.py`). Provide external links to standalone `.svg` copies saved under `docs/diagrams/<slug>.svg` for independent asset reuse.
+- **Multi-document system architecture pattern**: When documenting multi-dimensional systems (e.g., skill lifecycles, runtime boot sequences, capability matrices), separate concerns into specialized standalone HTML documents (e.g. `<domain>-lifecycle.html`, `<domain>-boot-sequence.html`, `<domain>-matrix.html`) anchored by a master Portal index (`index.html`) rather than cramming divergent scopes into a single unreadable page. Each document embeds its own focused inline SVG diagrams while providing download links to standalone `.svg` copies in `docs/diagrams/`. When the user asks to document and link multiple named pillars or ecosystems (e.g., OpenSpec, Matt Pocock, Crew), build a dedicated HTML guide and standalone SVG set for **every named pillar** — never use an existing generic workflow manual as a stand-in for a requested pillar. Assign stable row anchors (`id="<prefix>-<slug>"`) in catalog tables so counterpart columns cross-link directly (`<sibling>-guide.html#<id>`), update any total asset counters in `index.html`, and verify every cross-file `href` and `#anchor` target alongside `self_check.py`.
+- **Deep-dive component visual decomposition pattern**: Never substitute a single high-level overview diagram and dense prose walls for architectural deep-dives. When documenting complex platforms, pair the top-level topology with dedicated, specialized deep-dive diagrams for each major component, selecting the most expressive visual type from the 39-type catalog (e.g. Sequence for multi-agent choreography, Paved Road for security boundaries, State Machine/Flowchart for decision & specification contracts, Flywheel Loop for memory, Deployment for physical hardware/sensors). Provide an Interactive Component Explorer navigation bar with component jump links, embed every diagram inline directly, and save standalone SVG copies under `docs/diagrams/<slug>.svg` for independent asset reuse.
+- **Publication Manual output pattern**: A multi-section deliverable (guide, runbook, portal index) uses the 2-column `assets/template-manual.html` structure documented in §10 rather than the single-column `template-full.html`. Every figure is packaged in a `diagram-container` with header, viewport and caption; the portal `index.html` is a Publication Manual whose sticky `toc-sidebar` groups all documents and standalone SVG assets by domain.
+- **Link preconnect ban**: Do not include `<link rel="preconnect">` tags for font domains; use only the single authorized Google Fonts stylesheet `<link>` to satisfy single-file and remote-reference safety in `self_check.py`.
 
 Renders correctly in any modern browser. Motion-enabled output must render its complete meaning without JavaScript; under `prefers-reduced-motion: reduce` it shows the complete static frame and hides/disables playback controls.
 

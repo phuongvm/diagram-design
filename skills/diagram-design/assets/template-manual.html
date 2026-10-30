@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>[DOCUMENT TITLE] — Publication Manual</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ══ Publication Manual template (2-column) ═════════════════════════════
+       Canonical layout for multi-section documents that embed several
+       diagrams: sticky top-nav, 260px sticky toc-sidebar + 1fr article,
+       report-meta-badge, metadata-grid, callout-box, packaged diagram-container
+       figures, table-container, cards and dark code blocks.
+       Per-document accent: override --doc-accent / --doc-accent-tint only.
+       ═══════════════════════════════════════════════════════════════════ */
+    :root {
+      --paper: #fcfcfc;
+      --paper-card: #ffffff;
+      --paper-sidebar: #f8f9fa;
+      --ink: #1f2430;
+      --muted: #5c6479;
+      --accent: #eb6c36;
+      --accent-tint: rgba(235, 108, 54, 0.08);
+      --accent-blue: #2563eb;
+      --accent-blue-tint: rgba(37, 99, 235, 0.08);
+      --accent-green: #059669;
+      --accent-green-tint: rgba(5, 150, 105, 0.08);
+      --accent-purple: #7c3aed;
+      --accent-purple-tint: rgba(124, 58, 237, 0.08);
+      --doc-accent: var(--accent);
+      --doc-accent-tint: var(--accent-tint);
+      --rule: rgba(31, 36, 48, 0.12);
+      --code-bg: #141720;
+      --code-fg: #f0f3f8;
+      --tag-bg: #f1f3f7;
+      --svg-paper: #f5f5f5;
+      --svg-surface: #ffffff;
+      --svg-panel: #eceef2;
+      --svg-ink: #2d3142;
+      --svg-muted: #4f5d75;
+      --svg-soft: #7a8399;
+      --svg-rule: rgba(45, 49, 66, 0.14);
+      --svg-accent: #eb6c36;
+      --svg-accent-tint: rgba(235, 108, 54, 0.08);
+      --svg-green: #059669;
+      --svg-green-tint: rgba(5, 150, 105, 0.08);
+      --svg-blue: #2563eb;
+      --svg-blue-tint: rgba(37, 99, 235, 0.08);
+      --svg-purple: #7c3aed;
+      --svg-purple-tint: rgba(124, 58, 237, 0.08);
+      --svg-amber: #d97706;
+      --svg-amber-tint: rgba(217, 119, 6, 0.08);
+      --svg-red: #dc2626;
+      --svg-red-tint: rgba(220, 38, 38, 0.08);
+    }
+
+    /* Theme polarity: unset data-theme follows the OS; [data-theme-toggle] pins
+       html[data-theme="light"|"dark"]. The dark tokens are declared twice on purpose:
+       once behind the OS media query (guarded against an explicit light choice) and
+       once for an explicit dark choice. Keep both blocks identical. */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --paper: #0c0e14;
+        --paper-card: #151821;
+        --paper-sidebar: #11131a;
+        --ink: #eef1f8;
+        --muted: #959fad;
+        --rule: rgba(255, 255, 255, 0.1);
+        --code-bg: #08090d;
+        --code-fg: #f8fafc;
+        --tag-bg: rgba(255, 255, 255, 0.06);
+        --svg-paper: #11151f;
+        --svg-surface: #1e2434;
+        --svg-panel: #171c29;
+        --svg-ink: #eef1f8;
+        --svg-muted: #a6b0c3;
+        --svg-soft: #8e98ac;
+        --svg-rule: rgba(238, 241, 248, 0.14);
+        --svg-accent: #f08a59;
+        --svg-accent-tint: rgba(240, 138, 89, 0.14);
+        --svg-green: #34d399;
+        --svg-green-tint: rgba(52, 211, 153, 0.14);
+        --svg-blue: #60a5fa;
+        --svg-blue-tint: rgba(96, 165, 250, 0.14);
+        --svg-purple: #a78bfa;
+        --svg-purple-tint: rgba(167, 139, 250, 0.14);
+        --svg-amber: #fbbf24;
+        --svg-amber-tint: rgba(251, 191, 36, 0.14);
+        --svg-red: #f87171;
+        --svg-red-tint: rgba(248, 113, 113, 0.14);
+      }
+    }
+    html[data-theme="dark"] {
+      --paper: #0c0e14;
+      --paper-card: #151821;
+      --paper-sidebar: #11131a;
+      --ink: #eef1f8;
+      --muted: #959fad;
+      --rule: rgba(255, 255, 255, 0.1);
+      --code-bg: #08090d;
+      --code-fg: #f8fafc;
+      --tag-bg: rgba(255, 255, 255, 0.06);
+      --svg-paper: #11151f;
+      --svg-surface: #1e2434;
+      --svg-panel: #171c29;
+      --svg-ink: #eef1f8;
+      --svg-muted: #a6b0c3;
+      --svg-soft: #8e98ac;
+      --svg-rule: rgba(238, 241, 248, 0.14);
+      --svg-accent: #f08a59;
+      --svg-accent-tint: rgba(240, 138, 89, 0.14);
+      --svg-green: #34d399;
+      --svg-green-tint: rgba(52, 211, 153, 0.14);
+      --svg-blue: #60a5fa;
+      --svg-blue-tint: rgba(96, 165, 250, 0.14);
+      --svg-purple: #a78bfa;
+      --svg-purple-tint: rgba(167, 139, 250, 0.14);
+      --svg-amber: #fbbf24;
+      --svg-amber-tint: rgba(251, 191, 36, 0.14);
+      --svg-red: #f87171;
+      --svg-red-tint: rgba(248, 113, 113, 0.14);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Geist', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.68;
+      font-size: 15.5px;
+      padding-bottom: 90px;
+    }
+
+    /* ── Top navigation ─────────────────────────────────────────── */
+    .top-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--paper);
+      border-bottom: 1px solid var(--rule);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 12px 24px;
+    }
+    .top-nav-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--ink);
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .nav-brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--doc-accent);
+    }
+    .nav-brand-group { display: flex; align-items: center; gap: 12px; }
+    .nav-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .nav-icon-btn {
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--rule);
+      background: var(--paper-card);
+      color: var(--ink);
+      cursor: pointer;
+    }
+    .nav-icon-btn:hover { border-color: var(--doc-accent); color: var(--doc-accent); }
+    button:focus-visible { outline: 3px solid var(--doc-accent); outline-offset: 2px; }
+
+    /* JS-only controls stay hidden until the controller marks the document ready,
+       so a script-free page is the plain static manual. */
+    [data-toc-toggle], [data-theme-toggle], [data-diagram-open] { display: none; }
+    html[data-manual="ready"] [data-toc-toggle],
+    html[data-manual="ready"] [data-theme-toggle],
+    html[data-manual-modal="ready"] [data-diagram-open] {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .nav-link-btn {
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      border: 1px solid var(--rule);
+      background: var(--paper-card);
+      color: var(--ink);
+      transition: all 0.15s ease;
+      font-weight: 500;
+    }
+    .nav-link-btn:hover { border-color: var(--doc-accent); color: var(--doc-accent); }
+    .nav-link-btn.current {
+      background: var(--doc-accent-tint);
+      border-color: var(--doc-accent);
+      color: var(--doc-accent);
+    }
+    .nav-link-btn.primary {
+      background: var(--doc-accent);
+      color: #ffffff;
+      border-color: var(--doc-accent);
+    }
+
+    /* ── Layout frame: 260px sidebar + 1fr article ──────────────── */
+    .layout-frame {
+      max-width: 1240px;
+      margin: 2rem auto 0 auto;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .layout-frame { grid-template-columns: 1fr; gap: 20px; padding: 0 16px; }
+      .toc-sidebar { display: none; }
+      html[data-manual="ready"] [data-toc-toggle] { display: none; }
+    }
+    /* [data-toc-toggle] collapses the sidebar and gives the article the full window. */
+    html[data-toc="collapsed"] .layout-frame { max-width: 100%; grid-template-columns: minmax(0, 1fr); }
+    html[data-toc="collapsed"] .toc-sidebar { display: none; }
+    html[data-toc="collapsed"] article { max-width: 100%; }
+
+    /* ── Sticky table of contents ───────────────────────────────── */
+    .toc-sidebar {
+      position: sticky;
+      top: 80px;
+      background: var(--paper-sidebar);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      padding: 18px;
+      max-height: calc(100vh - 110px);
+      overflow-y: auto;
+    }
+    .toc-title {
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+    .toc-group {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--doc-accent);
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    .toc-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 0; }
+    .toc-link {
+      font-size: 13px;
+      text-decoration: none;
+      color: var(--muted);
+      display: block;
+      line-height: 1.4;
+      transition: color 0.15s ease;
+    }
+    .toc-link:hover { color: var(--doc-accent); }
+
+    /* ── Main article ───────────────────────────────────────────── */
+    article { max-width: 920px; min-width: 0; }
+
+    .report-meta-badge {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 11.5px;
+      background: var(--tag-bg);
+      border: 1px solid var(--rule);
+      padding: 4px 10px;
+      border-radius: 4px;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .meta-tag-pill {
+      background: var(--doc-accent-tint);
+      color: var(--doc-accent);
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    h1.report-title {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      font-weight: 400;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+      color: var(--ink);
+    }
+
+    .metadata-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      background: var(--paper-card);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 28px;
+      font-size: 13px;
+    }
+    .meta-item { display: flex; flex-direction: column; }
+    .meta-item-label {
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 2px;
+    }
+    .meta-item-val { font-weight: 600; color: var(--ink); }
+
+    .callout-box {
+      background: var(--paper-card);
+      border-left: 4px solid var(--doc-accent);
+      border-top: 1px solid var(--rule);
+      border-right: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+      border-radius: 0 8px 8px 0;
+      padding: 20px;
+      margin-bottom: 36px;
+    }
+    .callout-box p { margin: 0 0 10px 0; font-size: 15px; color: var(--ink); }
+    .callout-box p:last-child { margin-bottom: 0; }
+
+    /* ── Headings and prose ─────────────────────────────────────── */
+    h2.section-heading {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: 2.1rem;
+      font-weight: 400;
+      margin: 44px 0 16px 0;
+      padding-top: 20px;
+      border-top: 1px solid var(--rule);
+      color: var(--ink);
+      scroll-margin-top: 80px;
+    }
+    h3.sub-heading {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 24px 0 12px 0;
+      color: var(--ink);
+    }
+    section[id] { scroll-margin-top: 80px; }
+    p { margin-bottom: 16px; color: var(--ink); }
+    a { color: var(--accent-blue); }
+    ul, ol { margin: 0 0 20px 24px; }
+    li { margin-bottom: 8px; }
+    .section-lead { color: var(--muted); font-size: 15px; max-width: 820px; }
+
+    /* ── Figures: diagram-container package ─────────────────────── */
+    .diagram-container {
+      margin: 28px 0 36px 0;
+      background: var(--paper-card);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .diagram-header {
+      padding: 12px 16px;
+      background: var(--paper-sidebar);
+      border-bottom: 1px solid var(--rule);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .diagram-header-title {
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .diagram-header-tag {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--tag-bg);
+      border: 1px solid var(--rule);
+      color: var(--muted);
+    }
+    .diagram-viewport { background: var(--svg-paper); padding: 0; overflow-x: auto; }
+    /* The viewport and inline <svg> consume adaptive --svg-* tokens so dark theme flips diagrams seamlessly. */
+    html[data-theme="dark"] .diagram-viewport { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .diagram-viewport { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+    }
+    .diagram-viewport svg { width: 100%; min-width: 760px; height: auto; display: block; }
+    .diagram-caption {
+      padding: 12px 16px;
+      font-size: 12.5px;
+      color: var(--muted);
+      border-top: 1px solid var(--rule);
+      background: var(--paper-card);
+      line-height: 1.5;
+    }
+    .diagram-header-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .diagram-expand-btn {
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 4px;
+      border: 1px solid var(--rule);
+      background: var(--paper-card);
+      color: var(--ink);
+      cursor: pointer;
+    }
+    .diagram-expand-btn:hover { border-color: var(--doc-accent); color: var(--doc-accent); }
+
+    /* Walkthrough controls and the step annotation exist only once the controller runs. */
+    .diagram-walkthrough-bar {
+      display: none;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 10px 16px;
+      border-top: 1px solid var(--rule);
+      background: var(--paper-card);
+    }
+    .motion-ready .diagram-walkthrough-bar { display: flex; }
+    .diagram-walkthrough-bar[hidden] { display: none !important; }
+    .diagram-walkthrough-bar button {
+      min-height: 36px;
+      padding: 6px 12px;
+      border: 1px solid var(--muted);
+      border-radius: 4px;
+      background: var(--paper);
+      color: var(--ink);
+      font: 600 12px/1 'Geist', sans-serif;
+      cursor: pointer;
+    }
+    .diagram-walkthrough-bar button:hover { border-color: var(--doc-accent); }
+    .diagram-walkthrough-bar button:disabled { cursor: not-allowed; opacity: 0.45; }
+    .walkthrough-counter {
+      margin-left: auto;
+      font: 500 12px/1.4 'Geist Mono', monospace;
+      color: var(--muted);
+    }
+    .diagram-annotation-banner {
+      display: none;
+      padding: 12px 16px;
+      border-top: 1px solid var(--rule);
+      border-left: 4px solid var(--doc-accent);
+      background: var(--doc-accent-tint);
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .motion-ready .diagram-annotation-banner { display: block; }
+
+    /* Step emphasis is border and contrast only: no shadow, glow or blur on any diagram element. */
+    @media screen {
+      .motion-ready[data-frame="step"] [data-motion-item],
+      .motion-ready[data-frame="start"] [data-motion-item] {
+        opacity: 0.12;
+        transform: translateY(8px);
+        transform-box: fill-box;
+        transform-origin: center;
+        transition: opacity 0.48s ease, transform 0.48s ease;
+      }
+      .motion-ready[data-frame="step"] [data-motion-item].is-visible,
+      .motion-ready[data-frame="start"] [data-motion-item].is-visible {
+        opacity: 1;
+        transform: none;
+      }
+      .motion-ready[data-frame="step"] [data-motion-item].is-visible:not(.is-current) { opacity: 0.55; }
+      .motion-ready[data-frame="step"] [data-motion-item].is-current :is(rect, path, circle, ellipse, polygon) {
+        stroke: var(--svg-accent, #eb6c36);
+        stroke-width: 2;
+      }
+    }
+
+    /* ── Diagram pop-up: one document-level <dialog> ────────────── */
+    .diagram-modal {
+      width: 96vw;
+      height: 92vh;
+      max-width: 96vw;
+      max-height: 92vh;
+      padding: 0;
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      background: var(--paper-card);
+      color: var(--ink);
+    }
+    .diagram-modal[open] { display: flex; flex-direction: column; }
+    .diagram-modal::backdrop { background: rgba(12, 14, 20, 0.72); }
+    .diagram-modal-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--rule);
+      background: var(--paper-sidebar);
+    }
+    .diagram-modal-title {
+      font: 600 11px/1.4 'Geist Mono', monospace;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .diagram-modal-close {
+      font: 600 12px/1 'Geist Mono', monospace;
+      padding: 6px 12px;
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      background: var(--paper-card);
+      color: var(--ink);
+      cursor: pointer;
+    }
+    .diagram-modal-close:hover { border-color: var(--doc-accent); color: var(--doc-accent); }
+    .diagram-modal-body { flex: 1; overflow: auto; padding: 16px; }
+    .diagram-modal-body .diagram-container { margin: 0; }
+    .diagram-modal-body .diagram-viewport svg { min-width: 0; }
+    .diagram-modal [data-diagram-open] { display: none !important; }
+
+    .noscript-note {
+      margin: 24px 0 0 0;
+      padding: 8px 12px;
+      border: 1px dashed var(--rule);
+      border-radius: 6px;
+      font: 500 12px/1.5 'Geist Mono', monospace;
+      color: var(--muted);
+    }
+
+    .asset-link {
+      font-family: 'Geist Mono', monospace;
+      font-size: 12px;
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .asset-link:hover { text-decoration: underline; }
+
+    /* ── Tables ─────────────────────────────────────────────────── */
+    .table-container {
+      overflow-x: auto;
+      margin: 20px 0 28px 0;
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      background: var(--paper-card);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; text-align: left; }
+    th {
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--paper-sidebar);
+      color: var(--muted);
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--rule);
+      font-weight: 600;
+    }
+    td { padding: 12px 16px; border-bottom: 1px solid var(--rule); color: var(--ink); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: rgba(0, 0, 0, 0.015); }
+    td.skill, td.asset-name { font-family: 'Geist Mono', monospace; font-weight: 600; }
+    td.skill { white-space: nowrap; }
+
+    /* ── Code ───────────────────────────────────────────────────── */
+    pre {
+      background: var(--code-bg);
+      color: var(--code-fg);
+      font-family: 'Geist Mono', ui-monospace, monospace;
+      font-size: 12.5px;
+      line-height: 1.5;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 16px 0 24px 0;
+      border: 1px solid var(--rule);
+    }
+    code {
+      font-family: 'Geist Mono', monospace;
+      font-size: 13px;
+      background: var(--tag-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--rule);
+    }
+    pre code { background: transparent; padding: 0; border: none; color: inherit; }
+
+    /* ── Cards, KPIs, badges ────────────────────────────────────── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px;
+      margin: 20px 0 28px 0;
+    }
+    .cards.stack { grid-template-columns: 1fr; }
+    .card {
+      background: var(--paper-card);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      padding: 18px 20px;
+      min-width: 0;
+    }
+    .card .eyebrow, .card .card-eyebrow, .eyebrow {
+      font-family: 'Geist Mono', monospace;
+      font-size: 10.5px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .card-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: var(--muted); }
+    .card-dot.coral { background: var(--accent); }
+    .card-dot.link, .card-dot.blue { background: var(--accent-blue); }
+    .card-dot.ink { background: var(--ink); }
+    .card-dot.slate, .card-dot.muted { background: var(--muted); }
+    .card h3 { font-size: 14.5px; font-weight: 700; margin: 0 0 8px 0; color: var(--ink); }
+    .card-header h3 { margin: 0; }
+    .card p { font-size: 13.5px; color: var(--muted); margin-bottom: 8px; }
+    .card ul { list-style: none; margin: 0; font-size: 13.5px; color: var(--muted); }
+    .card li { margin-bottom: 6px; padding-left: 14px; position: relative; }
+    .card li::before { content: '\2014'; position: absolute; left: 0; opacity: 0.4; }
+    .card pre { margin: 10px 0 0 0; }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .kpi { background: var(--paper-card); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 18px; }
+    .kpi b { display: block; font-family: 'Geist Mono', monospace; font-size: 24px; color: var(--doc-accent); }
+    .kpi span {
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+    }
+
+    .badge, .badge-status {
+      display: inline-block;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--tag-bg);
+      color: var(--muted);
+    }
+    .b-Discovery, .b-Gate, .badge.coral { background: var(--accent-tint); color: var(--accent); }
+    .b-Design, .b-Lifecycle, .badge.blue { background: var(--accent-blue-tint); color: var(--accent-blue); }
+    .b-Planning, .b-Role, .badge.purple { background: var(--accent-purple-tint); color: var(--accent-purple); }
+    .b-Delivery, .b-Tool, .badge.green { background: var(--accent-green-tint); color: var(--accent-green); }
+    .b-Human { background: var(--tag-bg); color: var(--muted); }
+
+    /* ── Portal catalog cards (index pages) ─────────────────────── */
+    .doc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin: 20px 0 28px 0;
+    }
+    .doc-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+      background: var(--paper-card);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      padding: 18px 20px;
+      text-decoration: none;
+      color: var(--ink);
+      transition: border-color 0.15s ease;
+    }
+    .doc-card:hover { border-color: var(--doc-accent); }
+    .doc-card-badge {
+      display: inline-block;
+      font-family: 'Geist Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      background: var(--tag-bg);
+      color: var(--muted);
+    }
+    .doc-card-badge.coral { background: var(--accent-tint); color: var(--accent); }
+    .doc-card-badge.blue { background: var(--accent-blue-tint); color: var(--accent-blue); }
+    .doc-card-badge.green { background: var(--accent-green-tint); color: var(--accent-green); }
+    .doc-card-badge.purple { background: var(--accent-purple-tint); color: var(--accent-purple); }
+    .doc-card-h2 { font-size: 16px; font-weight: 700; line-height: 1.35; margin-bottom: 8px; }
+    .doc-card-summary { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.55; }
+    .doc-card-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-family: 'Geist Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--rule);
+      padding-top: 10px;
+    }
+    .doc-card-action { color: var(--doc-accent); font-weight: 600; }
+
+    /* ── Footer ─────────────────────────────────────────────────── */
+    footer {
+      max-width: 1240px;
+      margin: 60px auto 0 auto;
+      padding: 24px;
+      border-top: 1px solid var(--rule);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      font-family: 'Geist Mono', monospace;
+    }
+
+    /* ── Document-level fallbacks (validated once per document) ──── */
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+      [data-motion-item] { opacity: 1 !important; transform: none !important; }
+      [data-motion-controls] { display: none !important; }
+    }
+    @media print {
+      body { padding-bottom: 0; }
+      .top-nav, .toc-sidebar, [data-motion-controls], [data-motion-status], [data-diagram-open], .diagram-modal { display: none !important; }
+      .layout-frame { display: block; max-width: 100%; }
+      [data-motion-item] { opacity: 1 !important; transform: none !important; transition: none !important; }
+      .diagram-container { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top navigation: brand + sibling documents. Mark the active page with class="current". -->
+  <nav class="top-nav" aria-label="Portal navigation">
+    <div class="top-nav-inner">
+      <div class="nav-brand-group">
+        <button type="button" class="nav-icon-btn" data-toc-toggle aria-expanded="true" aria-controls="manual-toc" title="Toggle Table of Contents ([)">☰ TOC</button>
+        <a href="index.html" class="nav-brand">
+          <span class="nav-brand-dot"></span>
+          <span>[Document Short Name]</span>
+        </a>
+      </div>
+      <div class="nav-actions">
+        <a href="index.html" class="nav-link-btn">Portal Home</a>
+        <a href="#overview" class="nav-link-btn current" aria-current="page">This Manual</a>
+        <button type="button" class="nav-icon-btn" data-theme-toggle aria-pressed="false" title="Toggle Dark / Light Theme">◐ Theme</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Layout frame: sticky toc-sidebar (260px) + article (1fr) -->
+  <div class="layout-frame">
+
+    <aside class="toc-sidebar" id="manual-toc" aria-label="Table of contents">
+      <div class="toc-title">Table of Contents</div>
+      <ul class="toc-list">
+        <li><a href="#overview" class="toc-link">Overview</a></li>
+        <li><a href="#sec-one" class="toc-link">1. First Section</a></li>
+        <li><a href="#sec-two" class="toc-link">2. Reference Table</a></li>
+        <li><a href="#sec-three" class="toc-link">3. Commands</a></li>
+      </ul>
+    </aside>
+
+    <article>
+
+      <div class="report-meta-badge">
+        <span class="meta-tag-pill">MANUAL</span>
+        <span>DOC ID: [DOC-ID]</span>
+        <span>&bull;</span>
+        <span>EDITION: V1.0</span>
+      </div>
+
+      <h1 class="report-title">[Document Title]</h1>
+
+      <div class="metadata-grid">
+        <div class="meta-item"><span class="meta-item-label">Audience</span><span class="meta-item-val">[Who reads this]</span></div>
+        <div class="meta-item"><span class="meta-item-label">Scope</span><span class="meta-item-val">[What it covers]</span></div>
+        <div class="meta-item"><span class="meta-item-label">Source of truth</span><span class="meta-item-val">[Repo path or spec]</span></div>
+        <div class="meta-item"><span class="meta-item-label">Status</span><span class="meta-item-val" style="color: var(--accent-green);">Current</span></div>
+      </div>
+
+      <section id="overview">
+        <div class="callout-box">
+          <p>One paragraph stating what the reader gets from this manual and which decision it supports.</p>
+        </div>
+      </section>
+
+      <!-- Figure section: every diagram is packaged in a diagram-container -->
+      <section id="sec-one">
+        <h2 class="section-heading">1. First Section</h2>
+        <p class="section-lead">One sentence introducing the figure and what to look for.</p>
+
+        <!-- Ordered-narrative figure: step-mode root. It loads COMPLETE (step = count) so a scrolling
+             reader sees the whole diagram; Walkthrough / Present reveal it step by step.
+             Matrix, legend and inventory figures are data-motion-mode="none" data-step-count="0":
+             keep [data-diagram-open] (zoom only) and drop the walkthrough bar and the banner. -->
+        <div class="diagram-container" data-motion-root data-motion-mode="step" data-step-count="3" data-step-current="3" data-frame="end" data-static-frame="complete" tabindex="-1">
+          <div class="diagram-header">
+            <span class="diagram-header-title">FIGURE 1.1: [FIGURE TITLE]</span>
+            <div class="diagram-header-actions">
+              <span class="diagram-header-tag">VISUAL PATTERN: PROCESS</span>
+              <button type="button" class="diagram-expand-btn" data-diagram-open aria-label="Present diagram in fullscreen">&#10530; Present</button>
+            </div>
+          </div>
+          <div class="diagram-viewport">
+            <svg role="img" aria-labelledby="manual-sample-title manual-sample-desc" viewBox="0 0 1000 200" xmlns="http://www.w3.org/2000/svg">
+              <title id="manual-sample-title">Sample three-step flow</title>
+              <desc id="manual-sample-desc">Three boxes joined left to right by arrows, with the middle step highlighted as the focal element.</desc>
+              <defs>
+                <marker id="manual-sample-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                  <polygon points="0 0, 8 3, 0 6" fill="var(--svg-muted, #4f5d75)"/>
+                </marker>
+              </defs>
+              <rect width="100%" height="100%" fill="var(--svg-paper, #f5f5f5)"/>
+              <line x1="280" y1="100" x2="396" y2="100" stroke="var(--svg-muted, #4f5d75)" stroke-width="1" marker-end="url(#manual-sample-arrow)"/>
+              <line x1="600" y1="100" x2="716" y2="100" stroke="var(--svg-muted, #4f5d75)" stroke-width="1" marker-end="url(#manual-sample-arrow)"/>
+              <g data-motion-item data-step="1" aria-label="Step 1 &mdash; Step one: the first box receives the input.">
+                <rect x="80" y="68" width="200" height="64" rx="6" fill="var(--svg-surface, #ffffff)" stroke="var(--svg-ink, #2d3142)" stroke-width="1"/>
+                <text x="180" y="104" fill="var(--svg-ink, #2d3142)" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Step one</text>
+              </g>
+              <g data-motion-item data-step="2" aria-label="Step 2 &mdash; Step two: the focal box transforms it.">
+                <rect x="400" y="68" width="200" height="64" rx="6" fill="var(--svg-accent-tint, rgba(235, 108, 54, 0.08))" stroke="var(--svg-accent, #eb6c36)" stroke-width="1"/>
+                <text x="500" y="104" fill="var(--svg-ink, #2d3142)" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Step two</text>
+              </g>
+              <g data-motion-item data-step="3" aria-label="Step 3 &mdash; Step three: the last box hands the result on.">
+                <rect x="720" y="68" width="200" height="64" rx="6" fill="var(--svg-surface, #ffffff)" stroke="var(--svg-ink, #2d3142)" stroke-width="1"/>
+                <text x="820" y="104" fill="var(--svg-ink, #2d3142)" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Step three</text>
+              </g>
+            </svg>
+          </div>
+          <div class="diagram-walkthrough-bar" data-motion-controls role="group" aria-label="Diagram walkthrough controls">
+            <button type="button" data-motion-action="replay" title="Start step-by-step walkthrough (R)">▶ Walkthrough</button>
+            <button type="button" data-motion-action="prev" title="Previous step (Left)">&larr; Prev</button>
+            <button type="button" data-motion-action="play" aria-pressed="false" title="Auto-play steps (Space)">Play</button>
+            <button type="button" data-motion-action="pause" aria-pressed="true" title="Pause (Space)">Pause</button>
+            <button type="button" data-motion-action="next" title="Next step (Right)">Next &rarr;</button>
+            <span class="walkthrough-counter" aria-hidden="true">Step <span data-motion-step-label>3</span> / 3</span>
+          </div>
+          <!-- The status is a sibling of the controls group: inside THIS root, never inside [data-motion-controls]. -->
+          <div class="diagram-annotation-banner" data-motion-status role="status" aria-live="polite" aria-atomic="true">Complete view &mdash; use &quot;Walkthrough&quot; or &quot;Present&quot; to step through each stage.</div>
+          <div class="diagram-caption">
+            Figure 1.1 &mdash; one-sentence takeaway. Standalone copy:
+            <a class="asset-link" href="diagrams/sample.svg">diagrams/sample.svg</a>
+          </div>
+        </div>
+
+        <div class="cards">
+          <div class="card">
+            <p class="eyebrow">Card eyebrow</p>
+            <div class="card-header"><span class="card-dot coral"></span><h3>Card title</h3></div>
+            <ul><li>Supporting fact one.</li><li>Supporting fact two.</li></ul>
+          </div>
+          <div class="card">
+            <p class="eyebrow">Card eyebrow</p>
+            <div class="card-header"><span class="card-dot link"></span><h3>Card title</h3></div>
+            <ul><li>Supporting fact one.</li></ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="sec-two">
+        <h2 class="section-heading">2. Reference Table</h2>
+        <div class="table-container">
+          <table>
+            <thead><tr><th>Name</th><th>Purpose</th><th>Owner</th></tr></thead>
+            <tbody>
+              <tr id="row-example"><td class="skill">example</td><td>What it does.</td><td>Role</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="sec-three">
+        <h2 class="section-heading">3. Commands</h2>
+        <pre><code>pwsh scripts/example.ps1 -DryRun</code></pre>
+      </section>
+
+      <!-- Document-level fallback: exactly one per page, even with many figures. -->
+      <noscript><p class="noscript-note">Interactive controls (table-of-contents toggle, theme switch, fullscreen presenter, step walkthroughs) require JavaScript. Every diagram above is shown in its complete final state.</p></noscript>
+
+    </article>
+  </div>
+
+  <footer>
+    <div>[Product] &bull; [Team] &bull; 2026</div>
+    <div>Document Ref: [DOC-ID]</div>
+  </footer>
+
+  <!-- Exactly one dialog per page: the controller reparents the live figure into it (never clones). -->
+  <dialog class="diagram-modal" data-diagram-modal aria-label="Diagram presentation">
+    <div class="diagram-modal-bar">
+      <span class="diagram-modal-title">Diagram presentation</span>
+      <button type="button" class="diagram-modal-close" data-diagram-close aria-label="Close diagram presentation">&#10005; Close</button>
+    </div>
+    <div class="diagram-modal-body" data-diagram-modal-body></div>
+  </dialog>
+
+  <!-- CANONICAL CONTROLLER. Copy byte-for-byte; never edit a page copy. Update procedure:
+       edit only this file, then `sync_manual_controls.py --write <pages>`, `--check`, `self_check.py`. -->
+  <script data-manual-controls>
+    (() => {
+      const TOC_KEY = 'manual:toc';
+      const THEME_KEY = 'manual:theme';
+      const HOLD_MS = 2000;
+      const root = document.documentElement;
+      const motionRoots = new WeakMap();
+
+      function readState(key) {
+        try { return window.localStorage.getItem(key); } catch (error) { return null; }
+      }
+
+      function writeState(key, value) {
+        try { window.localStorage.setItem(key, value); } catch (error) { /* private mode: keep going */ }
+      }
+
+      function isTypingTarget(target) {
+        return target instanceof Element && (target.matches('input, textarea, select') || target.isContentEditable);
+      }
+
+      function initTocState() {
+        const button = document.querySelector('[data-toc-toggle]');
+        if (!button) return;
+        const apply = (state) => {
+          root.dataset.toc = state;
+          button.setAttribute('aria-expanded', String(state !== 'collapsed'));
+        };
+        const toggle = () => {
+          const next = root.dataset.toc === 'collapsed' ? 'expanded' : 'collapsed';
+          apply(next);
+          writeState(TOC_KEY, next);
+        };
+        apply(readState(TOC_KEY) === 'collapsed' ? 'collapsed' : 'expanded');
+        button.addEventListener('click', toggle);
+        document.addEventListener('keydown', (event) => {
+          if (event.key !== '[' || event.ctrlKey || event.metaKey || event.altKey) return;
+          if (isTypingTarget(event.target)) return;
+          event.preventDefault();
+          toggle();
+        });
+      }
+
+      function initThemeState() {
+        const button = document.querySelector('[data-theme-toggle]');
+        if (!button) return;
+        const system = window.matchMedia('(prefers-color-scheme: dark)');
+        const effective = () => root.dataset.theme || (system.matches ? 'dark' : 'light');
+        const sync = () => button.setAttribute('aria-pressed', String(effective() === 'dark'));
+        const saved = readState(THEME_KEY);
+        if (saved === 'light' || saved === 'dark') root.dataset.theme = saved;
+        button.addEventListener('click', () => {
+          const next = effective() === 'dark' ? 'light' : 'dark';
+          root.dataset.theme = next;
+          writeState(THEME_KEY, next);
+          sync();
+        });
+        system.addEventListener('change', sync);
+        sync();
+      }
+
+      function initDiagramModal() {
+        const dialog = document.querySelector('[data-diagram-modal]');
+        const body = dialog && dialog.querySelector('[data-diagram-modal-body]');
+        if (!dialog || !body || typeof dialog.showModal !== 'function') return;
+        const title = dialog.querySelector('.diagram-modal-title');
+        let activeRoot = null;
+        let placeholder = null;
+        let lastOpener = null;
+
+        function closeModal() {
+          if (activeRoot) {
+            const api = motionRoots.get(activeRoot);
+            if (api) api.stopTimer();
+            placeholder.replaceWith(activeRoot);
+            activeRoot = null;
+            placeholder = null;
+          }
+          if (dialog.open) dialog.close();
+          if (lastOpener) lastOpener.focus();
+        }
+
+        function openModal(figure, opener) {
+          if (activeRoot) closeModal();
+          lastOpener = opener;
+          activeRoot = figure;
+          placeholder = document.createComment(' diagram-modal-placeholder ');
+          figure.before(placeholder);
+          body.appendChild(figure);
+          const heading = figure.querySelector('.diagram-header-title');
+          if (title) title.textContent = heading ? heading.textContent : 'Diagram presentation';
+          dialog.showModal();
+          const api = motionRoots.get(figure);
+          if (api) api.present();
+          figure.focus({ preventScroll: true });
+        }
+
+        document.addEventListener('click', (event) => {
+          const opener = event.target instanceof Element ? event.target.closest('[data-diagram-open]') : null;
+          const figure = opener && opener.closest('[data-motion-root]');
+          if (figure && !dialog.contains(figure)) openModal(figure, opener);
+        });
+        dialog.addEventListener('click', (event) => {
+          if (event.target === dialog || event.target.closest('[data-diagram-close]')) closeModal();
+        });
+        dialog.addEventListener('cancel', (event) => { event.preventDefault(); closeModal(); });
+        dialog.addEventListener('close', closeModal);
+        dialog.addEventListener('keydown', (event) => {
+          const api = activeRoot && motionRoots.get(activeRoot);
+          if (api && !activeRoot.contains(event.target)) api.onKey(event);
+        });
+        root.dataset.manualModal = 'ready';
+      }
+
+      function initMotionRoot(figure) {
+        const idle = { stopTimer() {}, present() {}, onKey() {} };
+        const count = Number(figure.dataset.stepCount);
+        const controls = figure.querySelector('[data-motion-controls]');
+        const status = figure.querySelector('[data-motion-status]');
+        if (figure.dataset.motionMode !== 'step' || !controls || !status || !(count > 0)) return idle;
+
+        const params = new URLSearchParams(window.location.search);
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const items = [...figure.querySelectorAll('[data-motion-item]')];
+        const label = figure.querySelector('[data-motion-step-label]');
+        const labels = Array.from({ length: count + 1 }, (unused, index) => index === 0
+          ? 'Start of walkthrough. Press Next to begin.'
+          : items.filter((item) => !item.hasAttribute('data-motion-decorative') && Number(item.dataset.step) === index)
+              .map((item) => item.getAttribute('aria-label')).join('; '));
+        const staticOverride = params.get('motion') === 'static';
+        const rawStep = params.get('step');
+        const testStep = params.get('motion') === 'step' && /^\d+$/.test(rawStep || '') && Number(rawStep) <= count
+          ? Number(rawStep) : null;
+        const button = (action) => controls.querySelector(`[data-motion-action="${action}"]`);
+        let step = count;
+        let timer = 0;
+        let playing = false;
+
+        function render(next) {
+          step = Math.max(0, Math.min(count, next));
+          figure.dataset.stepCurrent = String(step);
+          figure.dataset.frame = step === count ? 'end' : step === 0 ? 'start' : 'step';
+          items.forEach((item) => {
+            const itemStep = Number(item.dataset.step);
+            item.classList.toggle('is-visible', itemStep <= step);
+            item.classList.toggle('is-current', itemStep === step);
+          });
+          if (label) label.textContent = String(step);
+          button('prev').disabled = step === 0;
+          button('next').disabled = step === count;
+        }
+
+        function announce() {
+          status.textContent = labels[step] || 'Complete';
+        }
+
+        function stopTimer() {
+          window.clearTimeout(timer);
+          timer = 0;
+          playing = false;
+          figure.classList.remove('is-playing');
+          button('play').setAttribute('aria-pressed', 'false');
+          button('pause').setAttribute('aria-pressed', 'true');
+        }
+
+        function tick() {
+          if (!playing) return;
+          render(step + 1);
+          announce();
+          if (step >= count) { stopTimer(); return; }
+          timer = window.setTimeout(tick, HOLD_MS);
+        }
+
+        function play(fromStart) {
+          stopTimer();
+          if (fromStart || step >= count) render(0);
+          playing = true;
+          figure.classList.add('is-playing');
+          button('play').setAttribute('aria-pressed', 'true');
+          button('pause').setAttribute('aria-pressed', 'false');
+          announce();
+          timer = window.setTimeout(tick, HOLD_MS);
+        }
+
+        function goTo(next) {
+          stopTimer();
+          render(next);
+          announce();
+        }
+
+        function lock(frame, text) {
+          stopTimer();
+          render(frame === 'step' ? testStep : count);
+          controls.hidden = true;
+          controls.querySelectorAll('button').forEach((control) => { control.disabled = true; });
+          figure.dataset.frame = frame;
+          status.textContent = text;
+        }
+
+        function unlock() {
+          controls.hidden = false;
+          controls.querySelectorAll('button').forEach((control) => { control.disabled = false; });
+          render(count);
+        }
+
+        function locked() {
+          return controls.hidden;
+        }
+
+        function onKey(event) {
+          if (locked() || (event.target instanceof Element && event.target.matches('input, textarea, select, a[href]'))) return;
+          if (event.code === 'Space' && !(event.target instanceof Element && event.target.closest('button'))) {
+            event.preventDefault();
+            if (playing) { stopTimer(); status.textContent = `Paused at step ${step} of ${count}`; } else { play(false); }
+            return;
+          }
+          if (!event.ctrlKey && !event.metaKey && !event.altKey && event.key.toLowerCase() === 'r') {
+            event.preventDefault();
+            play(true);
+            return;
+          }
+          const targets = { ArrowLeft: step - 1, ArrowRight: step + 1, Home: 0, End: count };
+          if (!(event.key in targets)) return;
+          event.preventDefault();
+          goTo(targets[event.key]);
+        }
+
+        function present() {
+          if (locked()) return;
+          goTo(1);
+        }
+
+        controls.addEventListener('click', (event) => {
+          const action = event.target instanceof Element && event.target.closest('[data-motion-action]');
+          if (!action) return;
+          const name = action.dataset.motionAction;
+          if (name === 'play') play(false);
+          if (name === 'replay') play(true);
+          if (name === 'pause') { stopTimer(); status.textContent = `Paused at step ${step} of ${count}`; }
+          if (name === 'prev') goTo(step - 1);
+          if (name === 'next') goTo(step + 1);
+        });
+        figure.addEventListener('keydown', onKey);
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') stopTimer(); });
+        reduce.addEventListener('change', () => {
+          if (reduce.matches) lock('static', 'Reduced motion: complete static frame, playback controls unavailable.');
+          else if (!staticOverride) { unlock(); status.textContent = labels[count]; }
+        });
+
+        if (staticOverride) lock('static', 'Static frame: complete diagram, playback controls unavailable.');
+        else if (reduce.matches) lock('static', 'Reduced motion: complete static frame, playback controls unavailable.');
+        else if (testStep !== null) lock('step', `Test frame: step ${testStep} of ${count}, playback controls unavailable.`);
+        else render(count);
+        figure.classList.add('motion-ready');
+        return { stopTimer, present, onKey };
+      }
+
+      function boot() {
+        root.dataset.manual = 'ready';
+        initTocState();
+        initThemeState();
+        document.querySelectorAll('[data-motion-root]').forEach((figure) => {
+          motionRoots.set(figure, initMotionRoot(figure));
+        });
+        initDiagramModal();
+      }
+
+      boot();
+    })();
+  </script>
+
+</body>
+</html>
