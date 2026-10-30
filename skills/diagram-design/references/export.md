@@ -40,7 +40,9 @@ If the user explicitly asks for "a screenshot of the whole page including the ca
      ```
      If the SVG already contains a `<defs>` block, **merge** the `<style>` into it (don't add a second `<defs>`).
 4. Prepend `<?xml version="1.0" encoding="UTF-8"?>\n` so the file is well-formed XML.
-5. Write to `<basename>.svg` next to the source (e.g. `example-architecture.html` → `example-architecture.svg`). Honour an explicit output path if the user provides one.
+5. Write to `<basename>.svg` next to the source (e.g. `example-architecture.html` → `example-architecture.svg`). When a repository maintains an established documentation tree (such as `docs/diagrams/`), store both the source HTML and exported SVG in that directory. Honour an explicit output path if the user provides one.
+6. Verify the exported `.svg` with `self_check.py`:
+   Run `python <workspace-root>/.agents/skills/diagram-design/scripts/self_check.py <output.svg>` to confirm the accessible-SVG contract, well-formed XML declaration, and font import syntax pass before reporting completion.
 
 ### Caveat to surface to the user
 
