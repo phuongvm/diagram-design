@@ -98,6 +98,16 @@ def canonical_controller_digest():
     return hashlib.sha256(body.encode("utf-8")).hexdigest()
 
 
+def is_publication_manual(text: str) -> bool:
+    """True when the file declares the standalone Publication Manual controller contract."""
+    blocks = list(SCRIPT_BLOCK_RE.finditer(text))
+    return (
+        len(blocks) == 1
+        and len(list(SCRIPT_OPEN_RE.finditer(text))) == 1
+        and blocks[0].group("attrs").strip().casefold() == "data-manual-controls"
+    )
+
+
 def google_fonts_families(url):
     """Return exact families from an approved Google Fonts css2 stylesheet."""
     try:
@@ -754,6 +764,9 @@ def main():
     for path in paths:
         try:
             text = path.read_text(encoding="utf-8")
+            if is_publication_manual(text):
+                skipped += 1
+                continue
             relative = display_path(path)
             expected_slug = diagram_slug(path)
             allow_template_placeholders = path.name.startswith("template")

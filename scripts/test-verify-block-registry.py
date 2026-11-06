@@ -333,6 +333,114 @@ def main() -> int:
         1,  # duplicate data-block-id "BLK-001", only if the first value was kept
     )
 
+    # ---- Repo-backed --repo-root and root-inheritable data-block-rev tests ----
+    import subprocess as sp
+
+    with tempfile.TemporaryDirectory() as repo_tmp:
+        repo = Path(repo_tmp) / "repo"
+        (repo / "src/pkg").mkdir(parents=True)
+        sp.run(["git", "init", str(repo)], check=True, capture_output=True)
+        sp.run(["git", "-C", str(repo), "config", "user.email", "t@example.com"], check=True)
+        sp.run(["git", "-C", str(repo), "config", "user.name", "Tester"], check=True)
+        (repo / "src/pkg/mod.py").write_text("line1\nline2\n", encoding="utf-8")
+        sp.run(["git", "-C", str(repo), "add", "."], check=True)
+        sp.run(["git", "-C", str(repo), "commit", "-m", "c1"], check=True, capture_output=True)
+        rev1 = sp.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"], text=True).strip()
+
+        (repo / "src/pkg/mod.py").write_text("line1\nline2\nline3\nline4\n", encoding="utf-8")
+        sp.run(["git", "-C", str(repo), "add", "."], check=True)
+        sp.run(["git", "-C", str(repo), "commit", "-m", "c2"], check=True, capture_output=True)
+        rev2 = sp.check_output(["git", "-C", str(repo), "rev-parse", "HEAD"], text=True).strip()
+
+        def check_repo(label: str, source: str, target_root: Path | None, expect_findings: int, needle: str = "") -> None:
+            with tempfile.TemporaryDirectory() as scratch:
+                candidate = Path(scratch) / "candidate.html"
+                candidate.write_text(source, encoding="utf-8")
+                findings = module.check(candidate, repo_root=target_root)
+            if len(findings) != expect_findings or (needle and not any(needle in f for f in findings)):
+                failures.append(
+                    f"{label}: expected {expect_findings} finding(s) ({needle!r}), got {len(findings)}: {findings}"
+                )
+            else:
+                print(f"OK: {label}")
+
+        # 1. Root/ancestor inheritance: <html data-block-rev=rev1> inherited by directory + file blocks
+        inherited_doc = (
+            f'<!DOCTYPE html><html data-block-rev="{rev1}"><body>{SVG_HEAD}'
+            + block("BLK-DIR", extra=' data-block-impl="src/pkg/"')
+            + block("BLK-FILE", parent="BLK-DIR", extra=' data-block-impl="src/pkg/mod.py#L1-L2"')
+            + "</svg></body></html>"
+        )
+        check_repo("inherited root data-block-rev passes tree and blob line bounds", inherited_doc, repo, 0)
+
+        # 2. Override precedence: ancestor has rev1 (2 lines), block overrides with rev2 (4 lines) -> #L1-L4 passes!
+        override_doc = (
+            f'<!DOCTYPE html><html data-block-rev="{rev1}"><body>{SVG_HEAD}'
+            + block("BLK-OVR", extra=f' data-block-rev="{rev2}" data-block-impl="src/pkg/mod.py#L1-L4"')
+            + "</svg></body></html>"
+        )
+        check_repo("block data-block-rev overrides ancestor data-block-rev", override_doc, repo, 0)
+
+        # 3. Same #L1-L4 without override inherits rev1 (only 2 lines) -> fails closed naming candidate.html:<line>
+        stale_inherited_doc = (
+            f'<!DOCTYPE html><html data-block-rev="{rev1}"><body>{SVG_HEAD}\n'
+            + block("BLK-STALE", extra=' data-block-impl="src/pkg/mod.py#L1-L4"')
+            + "\n</svg></body></html>"
+        )
+        check_repo("inherited rev1 catches out-of-range line bound", stale_inherited_doc, repo, 1, "candidate.html:2:")
+
+        # 4. Absent revision: passes structural-only mode without --repo-root, fails closed WITH --repo-root
+        no_rev_doc = document("\n" + block("BLK-NOREV", extra=' data-block-impl="src/pkg/mod.py#L1-L2"'))
+        check_repo("absent rev without --repo-root stays backward-compatible", no_rev_doc, None, 0)
+        check_repo("absent rev with --repo-root fails closed on data-block-impl", no_rev_doc, repo, 1, "candidate.html:2:")
+
+        # 5. Malformed data-block-rev (non-40-hex or blank) fails closed with exact line number
+        bad_anc_rev = f'<!DOCTYPE html>\n<html data-block-rev="not-a-sha"><body>{SVG_HEAD}{block("BLK-1")}</svg></body></html>'
+        check_repo("malformed ancestor data-block-rev reports offending line", bad_anc_rev, None, 1, "candidate.html:2:")
+        bad_blk_rev = document("\n" + block("BLK-1", extra=' data-block-rev=""'))
+        check_repo("blank block data-block-rev reports offending line", bad_blk_rev, None, 1, "candidate.html:2:")
+
+        # 6. Malformed data-block-impl syntax fails closed
+        check_repo("traversal data-block-impl rejected", document("\n" + block("BLK-1", extra=' data-block-impl="../secret.py"')), None, 1, "candidate.html:2:")
+        check_repo("inverted line range rejected", document("\n" + block("BLK-1", extra=' data-block-impl="src/pkg/mod.py#L4-L2"')), None, 1, "candidate.html:2:")
+
+        # 7. Unknown commit SHA, missing path, tree/blob mismatch, and non-toplevel --repo-root
+        dead_sha = "deadbeef" * 5
+        check_repo(
+            "missing commit SHA rejected offline",
+            document("\n" + block("BLK-1", extra=f' data-block-rev="{dead_sha}" data-block-impl="src/pkg/mod.py"')),
+            repo,
+            1,
+            "candidate.html:2:",
+        )
+        check_repo(
+            "directory cited without trailing slash or file cited with trailing slash fails",
+            f'<!DOCTYPE html><html data-block-rev="{rev2}"><body>{SVG_HEAD}\n'
+            + block("BLK-1", extra=' data-block-impl="src/pkg/mod.py/"')
+            + "</svg></body></html>",
+            repo,
+            1,
+            "candidate.html:2:",
+        )
+        check_repo("non-toplevel --repo-root subdirectory fails closed", inherited_doc, repo / "src", 1, "--repo-root")
+
+        # 8. CLI exit codes
+        with tempfile.TemporaryDirectory() as cli_tmp:
+            good_html = Path(cli_tmp) / "good.html"
+            bad_html = Path(cli_tmp) / "bad.html"
+            good_html.write_text(inherited_doc, encoding="utf-8")
+            bad_html.write_text(stale_inherited_doc, encoding="utf-8")
+            rc_ok = sp.run([sys.executable, str(VERIFIER), "--repo-root", str(repo), str(good_html)], capture_output=True, text=True)
+            rc_bad = sp.run([sys.executable, str(VERIFIER), "--repo-root", str(repo), str(bad_html)], capture_output=True, text=True)
+            if rc_ok.returncode != 0:
+                failures.append(f"CLI --repo-root good.html expected 0, got {rc_ok.returncode}: {rc_ok.stdout}{rc_ok.stderr}")
+            else:
+                print("OK: CLI --repo-root exits 0 on valid citations")
+            if rc_bad.returncode != 1 or "bad.html:2:" not in rc_bad.stdout:
+                failures.append(f"CLI --repo-root bad.html expected 1 with bad.html:2:, got {rc_bad.returncode}: {rc_bad.stdout}")
+            else:
+                print("OK: CLI --repo-root exits 1 naming file:line on invalid citation")
+
     if failures:
         print("\nFAILURES:")
         for failure in failures:

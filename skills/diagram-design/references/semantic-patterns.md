@@ -16,6 +16,8 @@ Use one primary pattern per figure. A second pattern may supply at most one supp
 | Which controls apply at each enforcement surface | **Governance / control catalog** | Layer stack |
 | How defenses reduce risk and what risk remains | **Compensating security layers** | Layer stack |
 | Which sub-elements a system decomposes into, each independently citable and traced to its implementation | **Traceable block decomposition** | Tree |
+| Hierarchical request, build, or query spans where parent-child latency nesting and measured vs illustrative timing are load-bearing | **Execution trace waterfall** | Gantt |
+| Before-vs-after system refactoring where removals, moves, modifications, and additions must be stepped cleanly without custom JS | **Architecture delta** | Architecture |
 
 ## 1. Fan-in queue / bottleneck
 
@@ -130,6 +132,34 @@ Use one primary pattern per figure. A second pattern may supply at most one supp
 **Nearest visual type:** **Tree** — Nested's single-chain containment cannot show two children of one parent; Dependency graph permits multi-parent nodes and cycles this pattern must forbid; Architecture's zones are flat, capped at 3, and explicitly route overflow to Swimlane, not to nested grouping.
 
 **A note on provenance, not a claim of compliance:** "block," noun-phrase naming, and "flow port" are SysML Block Definition Diagram vocabulary, used because this pattern documents structure, the thing SysML's naming convention is for (IDEF0's verb-phrase convention documents *functions* instead — the wrong fit here). This is SysML-*informed* vocabulary applied to Tree's existing layout grammar, not a claim of SysML compliance: no OCL constraints, no XMI interchange, no tool-certified conformance, and no IDEF0 compliance either.
+
+## 9. Execution trace waterfall
+
+**Selection triggers:** A request, build pipeline, database transaction, or RPC fan-out decomposes into timed parent and child spans where start offset, duration, nesting depth, error spans, and measured-versus-illustrative provenance carry the meaning.
+
+**Required primitives:** Root `<svg data-waterfall-evidence="measured|illustrative">` paired with a visible `<g data-waterfall-badge>` pill (`MEASURED` in `--svg-green` / `--svg-green-tint` or `ILLUSTRATIVE` in `--svg-amber` / `--svg-amber-tint`); `<g data-span-id="<id>">` rows with numeric `data-span-start` and `data-span-end` (`end >= start`) and optional acyclic `data-span-parent`; 4px-grid trace geometry (`row_h = 32`, `bar_h = 16`, hierarchical label indentation `indent = 16 * depth`, `font-size` in `{12, 8}`); parent bracket bars in `--svg-panel` fill / `--svg-ink` stroke enveloping child `[min(start), max(end)]`; leaf cohorts in `--svg-blue`, `--svg-purple`, or `--svg-muted`; error spans (`data-span-status="error"`) in `--svg-red` / `--svg-red-tint` with `[ERR]` in the label; linear horizontal bar `x` and `width` proportional to `[start, end]` within `±2px` (`min_bar_w = 4`). Verify with `python3 scripts/verify-waterfall.py <file>`.
+
+**Complexity budget:** ≤12 spans total, ≤4 nesting levels (`depth 0..3`), ≤3 leaf color cohorts, and 1 focal critical-path or error span chain. Collapse repetitive child calls into an aggregated cohort span (`3× cache_lookup`).
+
+**Anti-patterns:** Claiming `MEASURED` timing on invented numbers; child spans escaping their parent `[start, end]` bracket; off-grid row heights (`25px`) or bar heights (`14px`); arbitrary font sizes outside `{12, 8}`; raw `#hex` or `rgb()` literals instead of `var(--svg-*, fallback)` tokens; bar widths that do not scale linearly with duration.
+
+**Static fallback:** Always static by default — every span label, duration tick, `[ERR]` tag, and `MEASURED` / `ILLUSTRATIVE` badge is legible in a single frame without JavaScript.
+
+**Nearest visual type:** **Gantt** (`references/type-gantt.md` § Execution trace waterfall sub-mode).
+
+## 10. Architecture delta
+
+**Selection triggers:** An architectural refactoring, migration, or PR comparison must show what was removed, moved, modified, and added between a baseline and target topology without shipping a second `<iframe srcdoc>` viewer or duplicating DOM/SVG IDs.
+
+**Required primitives:** Semantic badges plus stroke-dash and `--svg-*` token encoding: `[− DEL]` (dashed `6,4`, `--svg-red` / `--svg-red-tint`), `[↔ MOVE]` (solid `--svg-blue` / `--svg-blue-tint` at the destination plus an origin ghost carrying `data-delta-ghost-of="<target-id>"` and no duplicate `id`), `[~ MOD]` (dashed `3,2`, `--svg-amber` or `--svg-accent`), and `[+ ADD]` (solid `--svg-green` / `--svg-green-tint`). When stepped via `<script data-manual-controls>` (`data-semantic-pattern="architecture-delta"`), the root MUST declare `data-motion-mode="step"`, `data-step-count="4"`, and `data-frame="end"` on load, stepping through the fixed four-phase sequence: **Step 1 `Removals` → Step 2 `Moves` → Step 3 `Modifications` → Step 4 `Additions`**.
+
+**Complexity budget:** ≤9 nodes total (including ghost origins), ≤12 connectors, exactly 4 ordered delta phases when stepped (`≤2` semantic items per step), and 0 bytes of custom JavaScript beyond the canonical controller.
+
+**Anti-patterns:** Color-only diff encoding without `[+ ADD]` / `[− DEL]` / `[~ MOD]` / `[↔ MOVE]` badges and dash patterns; duplicating `id="..."` on a moved node's ghost origin instead of `data-delta-ghost-of="<id>"`; using arbitrary step counts (`3`, `5`, `6`, `7`) or scrambling the `Removals → Moves → Modifications → Additions` phase order; hiding the final architecture on initial page load (`data-frame` must be `"end"`).
+
+**Static fallback:** Initializes complete at `data-frame="end"` (and under `prefers-reduced-motion: reduce`, `@media print`, or no-JS), displaying all four badge/dash encodings simultaneously in a single self-contained frame.
+
+**Nearest visual type:** **Architecture** (`references/type-architecture.md`).
 
 ## Composition rules
 

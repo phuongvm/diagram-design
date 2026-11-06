@@ -635,6 +635,119 @@ def main() -> int:
     else:
         print("OK: sample.svg carries adaptive --svg-* light/dark tokens")
 
+    # ---- Task 2.2: --verify-geometry, --json diagnostics, docs/ Tier-3 fence, and architecture-delta 4-phase contract ----
+    import json
+
+    clipped_html = static.replace(
+        "</svg>",
+        '<rect x="240" y="80" width="48" height="12" rx="2" fill="#f5f5f5"/>'
+        '<rect x="100" y="60" width="160" height="64" rx="6" fill="#f5f5f5"/></svg>',
+        1,
+    )
+    with tempfile.TemporaryDirectory() as scratch:
+        clipped_path = Path(scratch) / "clipped.html"
+        clipped_path.write_text(clipped_html, encoding="utf-8")
+        if module.verify(clipped_path, verify_geometry=False):
+            failures.append("verify_geometry=False should keep default structural-only behavior")
+        geom_errors = module.verify(clipped_path, verify_geometry=True)
+        if not any("label mask" in e for e in geom_errors):
+            failures.append(f"verify_geometry=True missed clipped label mask: {geom_errors}")
+        else:
+            print("OK: --verify-geometry catches z-order clipped label mask")
+
+        json_proc = subprocess.run(
+            [sys.executable, str(SELF_CHECK), "--verify-geometry", "--json", str(clipped_path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if json_proc.returncode != 1:
+            failures.append(f"--verify-geometry --json expected exit 1, got {json_proc.returncode}")
+        else:
+            payload = json.loads(json_proc.stdout)
+            if (
+                payload.get("ok") is not False
+                or payload.get("file") != str(clipped_path)
+                or not payload.get("diagnostics")
+                or not {"code", "severity", "subject", "evidence", "supportedFixes"} <= set(payload["diagnostics"][0])
+            ):
+                failures.append(f"unexpected --json diagnostic schema: {payload}")
+            else:
+                print("OK: --verify-geometry --json emits structured diagnostic schema")
+
+        # Portal docs/ Tier-3 Archify bundle & sidecar fence
+        docs_dir = Path(scratch) / "docs"
+        docs_dir.mkdir()
+        archify_meta_page = docs_dir / "bad-archify.html"
+        archify_meta_page.write_text(
+            manual.replace("<head>", '<head><meta name="generator" content="archify 3.2.0">', 1),
+            encoding="utf-8",
+        )
+        if not any("archify" in e.lower() for e in module.verify(archify_meta_page)):
+            failures.append("docs/ page with generator=archify was not rejected")
+        else:
+            print("OK: generator=archify rejected in docs/")
+
+        jb_font_page = docs_dir / "bad-font.html"
+        jb_font_page.write_text(
+            manual.replace("</style>", ".bad { font-family: 'JetBrains Mono', monospace; }</style>", 1),
+            encoding="utf-8",
+        )
+        if not any("jetbrains mono" in e.lower() for e in module.verify(jb_font_page)):
+            failures.append("JetBrains Mono font-family was not rejected")
+        else:
+            print("OK: JetBrains Mono font-family rejected")
+
+        sidecar_page = docs_dir / "with-sidecar.html"
+        sidecar_page.write_text(manual, encoding="utf-8")
+        (docs_dir / "with-sidecar.delivery.json").write_text("{}", encoding="utf-8")
+        if not any("sidecar" in e.lower() or "delivery.json" in e.lower() for e in module.verify(sidecar_page)):
+            failures.append("docs/ sibling .delivery.json sidecar was not rejected")
+        else:
+            print("OK: docs/ sibling Archify sidecar rejected")
+
+    # Architecture delta 4-phase contract
+    valid_arch_delta = edit_figure(
+        manual,
+        1,
+        'data-motion-root data-motion-mode="step" data-step-count="3" data-step-current="3" data-frame="end"',
+        'data-motion-root data-semantic-pattern="architecture-delta" data-motion-mode="step" data-step-count="4" data-step-current="4" data-frame="end"',
+    )
+    valid_arch_delta = valid_arch_delta.replace(
+        '<g data-motion-item data-step="1" aria-label="Step 1 &mdash; Step one: the first box receives the input.">',
+        '<g id="legacy-gw" data-motion-item data-step="1" aria-label="Step 1 &mdash; Removals: [− DEL] retire legacy gateway">',
+        1,
+    ).replace(
+        '<g data-motion-item data-step="2" aria-label="Step 2 &mdash; Step two: the focal box transforms it.">',
+        '<g data-delta-ghost-of="moved-router" data-motion-item data-step="2" aria-label="Step 2 &mdash; Moves: [↔ MOVE] relocate router"></g><g id="moved-router" data-motion-item data-step="2" aria-label="Step 2 &mdash; Moves: router at new zone">',
+        1,
+    ).replace(
+        '<g data-motion-item data-step="3" aria-label="Step 3 &mdash; Step three: the last box hands the result on.">',
+        '<g data-motion-item data-step="3" aria-label="Step 3 &mdash; Modifications: [~ MOD] tighten policy"></g><g data-motion-item data-step="4" aria-label="Step 4 &mdash; Additions: [+ ADD] zero-egress adapter">',
+        1,
+    )
+    check_pass_source("valid 4-phase architecture-delta figure", valid_arch_delta)
+    check_exact(
+        "architecture-delta with 3 steps instead of 4",
+        valid_arch_delta.replace('data-step-count="4"', 'data-step-count="3"', 1).replace('data-step="4"', 'data-step="3"', 1),
+        "data-step-count='4'",
+    )
+    check_exact(
+        "architecture-delta missing data-frame=end",
+        valid_arch_delta.replace(' data-frame="end"', "", 1),
+        "data-frame",
+    )
+    check_exact(
+        "architecture-delta wrong phase order (Additions before Removals)",
+        valid_arch_delta.replace("Removals: [− DEL]", "Additions: [+ ADD]", 1),
+        "Removals",
+    )
+    check_exact(
+        "architecture-delta unresolved data-delta-ghost-of target",
+        valid_arch_delta.replace('data-delta-ghost-of="moved-router"', 'data-delta-ghost-of="missing-node"', 1),
+        "data-delta-ghost-of",
+    )
+
     if failures:
         for failure in failures:
             print(f"FAIL: {failure}")

@@ -19,6 +19,7 @@ remain the authority for contributions to the repository itself.
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from collections import Counter
@@ -38,6 +39,28 @@ SHADOW_TOKEN_RE = re.compile(
     r"(?<![\w-])(?:box-shadow|text-shadow)\s*:|drop-shadow\s*\(|(?<![\w-])filter\s*:[^;}]*\bblur\s*\(",
     re.IGNORECASE,
 )
+FONT_DECL_RE = re.compile(r"font-family\s*:\s*([^;}]+)", re.IGNORECASE)
+RECT_RE = re.compile(
+    r"<rect\b[^>]*?"
+    r'\bx="(?P<x>-?[\d.]+)"\s+'
+    r'y="(?P<y>-?[\d.]+)"\s+'
+    r'width="(?P<w>[\d.]+)"\s+'
+    r'height="(?P<h>[\d.]+)"',
+    re.IGNORECASE,
+)
+NODE_MIN_W = 60.0
+NODE_MIN_H = 40.0
+MASK_MIN_W = 20.0
+MASK_MAX_W = 200.0
+MASK_MIN_H = 8.0
+MASK_MAX_H = 14.0
+EPSILON = 0.5
+ARCH_DELTA_PHASES: tuple[tuple[int, str, tuple[str, ...]], ...] = (
+    (1, "Removals", ("removal", "[− del]", "[- del]")),
+    (2, "Moves", ("move", "[↔ move]")),
+    (3, "Modifications", ("modification", "[~ mod]")),
+    (4, "Additions", ("addition", "[+ add]")),
+)
 
 
 def new_root_bucket(attrs: dict[str, str]) -> dict[str, object]:
@@ -50,6 +73,7 @@ def new_root_bucket(attrs: dict[str, str]) -> dict[str, object]:
         "statuses_in_controls": 0,
         "openers": 0,
         "openers_in_header": 0,
+        "ghost_refs": [],
     }
 
 
@@ -68,6 +92,7 @@ class DiagramParser(HTMLParser):
         self.svgs: list[dict[str, object]] = []
         self.unsafe: list[str] = []
         self.references: list[tuple[str, str, str]] = []
+        self.all_ids: list[str] = []
         self._svg_depth = 0
         self._current_svg: dict[str, object] | None = None
         self._capture: str | None = None
@@ -85,13 +110,19 @@ class DiagramParser(HTMLParser):
         tag = tag.casefold()
         normalized_attrs = [(key.casefold(), value or "") for key, value in attrs]
         data = {key: value for key, value in normalized_attrs}
+        if data.get("id"):
+            self.all_ids.append(data["id"])
         if tag in {"base", "embed", "object", "iframe"}:
             self.unsafe.append(f"<{tag}> is not allowed in a diagram file")
+        if tag == "meta" and data.get("name", "").strip().casefold() == "generator" and "archify" in data.get("content", "").casefold():
+            self.unsafe.append("generator=archify bundle is not allowed in an editorial/Portal diagram")
         for key, value in normalized_attrs:
             if key.startswith("on"):
                 self.unsafe.append(f"executable attribute {key} on <{tag}>")
             if key == "srcdoc":
                 self.unsafe.append(f"srcdoc attribute on <{tag}>")
+            if key == "font-family" and "jetbrains mono" in value.casefold():
+                self.unsafe.append("JetBrains Mono font-family is forbidden in diagram markup")
             if key in REFERENCE_ATTRS:
                 self.references.append((tag, data.get("rel", ""), value))
         if "style" in data:
@@ -108,17 +139,19 @@ class DiagramParser(HTMLParser):
                 self.root_buckets.append(self._root)
         if self._root is not None:
             if "data-motion-item" in data:
-                self._root["items"].append(data)
+                self._root["items"].append(data)  # type: ignore[union-attr]
+            if "data-delta-ghost-of" in data:
+                self._root["ghost_refs"].append(data["data-delta-ghost-of"])  # type: ignore[union-attr]
             if "data-motion-action" in data:
-                self._root["actions"].add(data["data-motion-action"])
+                self._root["actions"].add(data["data-motion-action"])  # type: ignore[union-attr]
             if "data-motion-controls" in data:
-                self._root["controls"] += 1
+                self._root["controls"] = int(self._root["controls"]) + 1  # type: ignore[arg-type]
                 if self._controls_depth is None:
                     self._controls_depth = len(self._element_stack)
             if "data-motion-status" in data:
-                self._root["statuses"].append(data)
+                self._root["statuses"].append(data)  # type: ignore[union-attr]
                 if self._controls_depth is not None:
-                    self._root["statuses_in_controls"] += 1
+                    self._root["statuses_in_controls"] = int(self._root["statuses_in_controls"]) + 1  # type: ignore[arg-type]
             if "diagram-header" in data.get("class", "").split() and self._header_depth is None:
                 self._header_depth = len(self._element_stack)
         else:
@@ -440,6 +473,50 @@ def check_root(
             errors.append(f"{prefix}data-diagram-open must sit inside the root's .diagram-header")
 
 
+def check_architecture_delta(
+    bucket: dict[str, object],
+    id_counts: Counter[str],
+    errors: list[str],
+    prefix: str,
+) -> None:
+    root = bucket["attrs"]
+    items = bucket["items"]
+    ghost_refs = bucket["ghost_refs"]
+    assert isinstance(root, dict) and isinstance(items, list) and isinstance(ghost_refs, list)
+    if root.get("data-semantic-pattern", "").strip().casefold() != "architecture-delta":
+        return
+    mode = root.get("data-motion-mode", "")
+    raw_count = root.get("data-step-count", "")
+    if mode != "step" or raw_count != "4":
+        errors.append(
+            f"{prefix}architecture-delta requires data-motion-mode='step' and data-step-count='4' "
+            f"(got mode={mode!r}, count={raw_count!r})"
+        )
+    if root.get("data-frame") != "end":
+        errors.append(f"{prefix}architecture-delta requires data-frame='end' on normal load")
+    by_step: dict[int, list[str]] = {}
+    for item in items:
+        if "data-motion-decorative" in item:
+            continue
+        raw_step = item.get("data-step", "")
+        if ASCII_DECIMAL_RE.fullmatch(raw_step):
+            text = f"{item.get('data-delta-phase', '')} {item.get('aria-label', '')}".casefold()
+            by_step.setdefault(int(raw_step), []).append(text)
+    for step_num, phase_title, tokens in ARCH_DELTA_PHASES:
+        labels = by_step.get(step_num, [])
+        if not labels or not any(tok in lbl for lbl in labels for tok in tokens):
+            errors.append(
+                f"{prefix}architecture-delta step {step_num} must represent {phase_title} "
+                "(order: 1 Removals -> 2 Moves -> 3 Modifications -> 4 Additions)"
+            )
+    for ghost_target in ghost_refs:
+        target = str(ghost_target).strip()
+        if not target or id_counts.get(target, 0) != 1:
+            errors.append(
+                f"{prefix}data-delta-ghost-of={ghost_target!r} must resolve to a unique element id in the document"
+            )
+
+
 def check_diagram_modal(parser: DiagramParser, errors: list[str]) -> None:
     if len(parser.dialogs) != 1:
         errors.append(f"expected exactly one <dialog data-diagram-modal>; found {len(parser.dialogs)}")
@@ -458,6 +535,71 @@ def check_shadows(parser: DiagramParser, errors: list[str]) -> None:
     found = sorted({match.group(0).strip().lower() for match in SHADOW_TOKEN_RE.finditer(css)})
     if found:
         errors.append(f"shadow/glow tokens are banned in diagram CSS (borders, not shadows): {', '.join(found)}")
+
+
+def check_fonts(parser: DiagramParser, errors: list[str]) -> None:
+    css = re.sub(r"/\*.*?\*/", "", "".join(parser.styles) + "\n" + "\n".join(parser.inline_styles), flags=re.DOTALL)
+    for match in FONT_DECL_RE.finditer(css):
+        if "jetbrains mono" in match.group(1).casefold():
+            errors.append("JetBrains Mono font-family is forbidden in diagram CSS")
+            break
+
+
+def check_portal_sidecars(path: Path, errors: list[str]) -> None:
+    try:
+        resolved = path.resolve()
+    except OSError:
+        return
+    if "docs" not in {part.casefold() for part in resolved.parts}:
+        return
+    parent = resolved.parent
+    stem = resolved.stem
+    forbidden_candidates = (
+        parent / ".archify-delivery-lock.json",
+        parent / f"{stem}.delivery.json",
+        parent / f"{stem}.finalize.json",
+        parent / f"{stem}.finalize-summary.json",
+        parent / f"{stem}.browser-check.json",
+    )
+    for candidate in forbidden_candidates:
+        if candidate.exists():
+            errors.append(f"Portal docs/ directory contains forbidden Archify sidecar: {candidate.name}")
+
+
+def check_geometry(path: Path, source: str, errors: list[str]) -> None:
+    rects: list[tuple[float, float, float, float, int, int]] = []
+    for match in RECT_RE.finditer(source):
+        rects.append(
+            (
+                float(match.group("x")),
+                float(match.group("y")),
+                float(match.group("w")),
+                float(match.group("h")),
+                source.count("\n", 0, match.start()) + 1,
+                match.start(),
+            )
+        )
+    nodes = [r for r in rects if r[2] >= NODE_MIN_W and r[3] >= NODE_MIN_H]
+    masks = [r for r in rects if MASK_MIN_W <= r[2] <= MASK_MAX_W and MASK_MIN_H <= r[3] <= MASK_MAX_H]
+    for mx, my, mw, mh, mline, moff in masks:
+        for nx, ny, nw, nh, nline, noff in nodes:
+            if noff <= moff:
+                continue
+            dx = min(mx + mw, nx + nw) - max(mx, nx)
+            dy = min(my + mh, ny + nh) - max(my, ny)
+            inside = (
+                mx >= nx - EPSILON
+                and my >= ny - EPSILON
+                and mx + mw <= nx + nw + EPSILON
+                and my + mh <= ny + nh + EPSILON
+            )
+            if dx <= 1.0 or dy <= 1.0 or inside:
+                continue
+            errors.append(
+                f"{path.name}:{mline}: label mask ({mx:g},{my:g} {mw:g}x{mh:g}) is clipped by node "
+                f"({nx:g},{ny:g} {nw:g}x{nh:g}) declared later at line {nline} (overlap {dx:g}x{dy:g}px)"
+            )
+            break
 
 
 def check_document_fallbacks(parser: DiagramParser, source: str, errors: list[str], *, manual: bool) -> None:
@@ -482,11 +624,13 @@ def check_motion(parser: DiagramParser, source: str, errors: list[str]) -> None:
     if not has_motion_markup:
         return
     errors.extend(parser.document_errors)
+    id_counts = Counter(parser.all_ids)
     if manual:
         if not parser.root_buckets:
             errors.append("a Publication Manual needs at least one data-motion-root")
         for number, bucket in enumerate(parser.root_buckets, 1):
             check_root(bucket, errors, f"root {number}: ", manual=True, has_script=True)
+            check_architecture_delta(bucket, id_counts, errors, f"root {number}: ")
         check_diagram_modal(parser, errors)
         check_shadows(parser, errors)
     else:
@@ -494,11 +638,41 @@ def check_motion(parser: DiagramParser, source: str, errors: list[str]) -> None:
             errors.append(f"expected exactly one data-motion-root; found {len(parser.roots)}")
             return
         check_root(parser.root_buckets[0], errors, "", manual=False, has_script=bool(parser.scripts))
+        check_architecture_delta(parser.root_buckets[0], id_counts, errors, "")
     if parser.scripts:
         check_document_fallbacks(parser, source, errors, manual=manual)
 
 
-def verify(path: Path) -> list[str]:
+def error_to_diagnostic(path: Path, error: str) -> dict[str, object]:
+    lowered = error.casefold()
+    if "label mask" in lowered:
+        code = "geometry/label-mask-clipped"
+        fixes = ["move the label mask onto an open connector segment clear of later-painted nodes"]
+    elif "architecture-delta" in lowered or "data-delta-ghost-of" in lowered:
+        code = "pattern/architecture-delta-invalid"
+        fixes = ["use step mode with data-step-count='4', data-frame='end', and 1 Removals -> 2 Moves -> 3 Modifications -> 4 Additions"]
+    elif "archify" in lowered or "jetbrains mono" in lowered:
+        code = "portal/tier3-bundle-forbidden"
+        fixes = ["author Portal HTML/SVG with diagram-design and stage Archify bundles outside docs/"]
+    elif "script" in lowered or "controller" in lowered:
+        code = "controller/non-canonical"
+        fixes = ["copy the canonical controller verbatim or run sync_manual_controls.py --write"]
+    elif "svg" in lowered:
+        code = "a11y/svg-contract"
+        fixes = ["ensure <svg role='img'> has first-child <title> and <desc> referenced by aria-labelledby"]
+    else:
+        code = "contract/self-check-violation"
+        fixes = ["resolve the reported diagram contract finding and re-run self_check.py"]
+    return {
+        "code": code,
+        "severity": "error",
+        "subject": {"file": str(path)},
+        "evidence": {"message": error},
+        "supportedFixes": fixes,
+    }
+
+
+def verify(path: Path, *, verify_geometry: bool = False) -> list[str]:
     source = path.read_text(encoding="utf-8")
     parser = parsed_document(source)
     errors: list[str] = []
@@ -507,29 +681,46 @@ def verify(path: Path) -> list[str]:
         finding = reference_error(tag, rel, value)
         if finding:
             errors.append(finding)
+    check_fonts(parser, errors)
+    check_portal_sidecars(path, errors)
     check_svgs(parser, errors)
     check_scripts(parser, errors)
     check_motion(parser, source, errors)
+    if verify_geometry:
+        check_geometry(path, source, errors)
     return errors
 
 
 def main() -> int:
     argument_parser = argparse.ArgumentParser(description=__doc__)
     argument_parser.add_argument("files", nargs="+", type=Path)
+    argument_parser.add_argument("--verify-geometry", action="store_true", help="check z-order label-mask clipping")
+    argument_parser.add_argument("--json", action="store_true", help="emit machine-readable JSON diagnostics")
     args = argument_parser.parse_args()
     failed = False
+    results: list[dict[str, object]] = []
+    all_diagnostics: list[dict[str, object]] = []
     for path in args.files:
         try:
-            errors = verify(path)
+            errors = verify(path, verify_geometry=args.verify_geometry)
         except (OSError, UnicodeError) as exc:
             errors = [str(exc)]
+        diags = [error_to_diagnostic(path, err) for err in errors]
+        all_diagnostics.extend(diags)
+        results.append({"ok": not errors, "file": str(path), "diagnostics": diags})
         if errors:
             failed = True
-            print(f"FAIL {path}")
-            for error in errors:
-                print(f"  - {error}")
-        else:
+            if not args.json:
+                print(f"FAIL {path}")
+                for error in errors:
+                    print(f"  - {error}")
+        elif not args.json:
             print(f"OK {path}")
+    if args.json:
+        if len(results) == 1:
+            print(json.dumps(results[0], ensure_ascii=False))
+        else:
+            print(json.dumps({"ok": not failed, "file": str(args.files[0]), "diagnostics": all_diagnostics, "results": results}, ensure_ascii=False))
     return 1 if failed else 0
 
 

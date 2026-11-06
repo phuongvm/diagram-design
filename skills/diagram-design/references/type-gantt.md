@@ -30,6 +30,15 @@
 
 Duration in pixels: `(end_week - start_week) × pitch`. Pitch = timeline_width / total_weeks.
 
+## Execution trace waterfall sub-mode (Semantic Pattern §9)
+
+When routed from `semantic-patterns.md` §9 (`Execution trace waterfall`), specialize the Gantt layout onto the 4px trace grid (`scripts/verify-waterfall.py`):
+
+- **Root & evidence badge:** Declare `data-waterfall-evidence="measured|illustrative"` on `<svg>` (plus optional `data-waterfall-track-x` and `data-waterfall-track-width`) and render a matching `<g data-waterfall-badge>` pill displaying `MEASURED` (`--svg-green` / `--svg-green-tint`) or `ILLUSTRATIVE` (`--svg-amber` / `--svg-amber-tint`).
+- **4px-grid trace geometry & typography:** Use `row_h = 32` (`bar_y` advances by `32px` per row), `bar_h = 16` (`height="16"`), hierarchical label indentation `indent = 16 * depth` (`label_x = base_label_x + 16 * depth`), and `font-size` strictly in `{12, 8}` (`12` for span names, `8` for duration ticks and badges).
+- **Span hierarchy & proportional widths:** Every `<g data-span-id="<id>">` carries numeric `data-span-start` and `data-span-end` (`end >= start`), optional acyclic `data-span-parent="<parent_id>"` (child `[start, end]` must stay within parent `[start, end]`), and a `<rect data-span-bar>` whose `x` and `width` scale linearly across `track_w` within `±2px` 4px-grid rounding tolerance (`min_bar_w = 4`).
+- **Adaptive `--svg-*` token mapping (zero raw `#hex`):** Parent bracket bars use `var(--svg-panel, ...)` fill and `var(--svg-ink, ...)` stroke; leaf cohorts use `--svg-blue`, `--svg-purple`, or `--svg-muted`; error spans (`data-span-status="error"`) use `--svg-red` / `--svg-red-tint` and include `[ERR]` in the span label.
+
 ## Anti-patterns
 
 - More than 12 tasks (splits into sub-plans or collapses into phase-level view).

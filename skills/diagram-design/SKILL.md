@@ -18,17 +18,15 @@ Thirty-nine visual types. Semantic patterns describe behavior independently; typ
 
 **Before generating your first diagram in a new project, verify the style guide has been customized.**
 
-Don't silently ship default-skinned diagrams into a branded project.
-
 First check the project root for a `.diagram-design` marker and resolve it per [`references/profiles.md`](references/profiles.md). A valid marker whose profile exists selects that file directly and skips this gate; `profile: default` also skips it. A malformed or missing-profile marker follows the visible failure handling in that reference. Never copy a marker-selected profile over the installed working copy.
 
 Open [`references/style-guide.md`](references/style-guide.md) and check the default tokens. If they're still the shipped defaults (paper `#f5f5f5`, ink `#2d3142`, accent `#eb6c36` atomic-tangerine), **pause and ask the user**:
 
 > *"This is your first diagram in this project. The style guide is still at the default (neutral white-smoke + atomic-tangerine). Do you want to customize it to match your brand first? Options: (a) pull from your website URL, (b) extract from an installed skill, (c) extract from a local folder / design-system directory, (d) paste tokens manually, (e) proceed with the default for now, (f) load a saved client profile."*
 
-Then branch per the matching section of [`references/onboarding.md`](references/onboarding.md); for **(f)** follow [`references/profiles.md`](references/profiles.md).
+Then branch per [`references/onboarding.md`](references/onboarding.md); for **(f)** follow [`references/profiles.md`](references/profiles.md).
 
-**Once the style guide has been customized** (or the user explicitly opted for default), skip this gate on subsequent runs. A leading profile header names the copied-in active profile. Without a header, any semantic-role value or typography family differing from shipped defaults means **custom-unsaved**: skip the gate and offer to save it as a profile. All-default tokens with no marker/header trigger the gate. At the end of every onboarding method, offer to save the result as a named client profile per `references/profiles.md`.
+**Once customized** (or if the user opted for default), skip this gate on subsequent runs. A leading profile header names the active profile; without a header, any non-default semantic token or typography family means **custom-unsaved** (skip the gate and offer to save it). At the end of onboarding, offer to save a named client profile per `references/profiles.md`.
 
 ---
 
@@ -76,6 +74,8 @@ When behavior, state, enforcement, or risk carries the meaning, first load [`ref
 | Controls grouped by where they are enforced | **Governance / control catalog** → Layer stack |
 | Defenses compensate for prior gaps and residual risk propagates | **Compensating security layers** → Layer stack |
 | Hierarchical, ID-addressable decomposition needing per-block I/O, constraints, and a code link | **Traceable block decomposition** → Tree |
+| Hierarchical latency/trace spans with parent-child nesting and measured vs illustrative timing | **Execution trace waterfall** → Gantt |
+| System refactoring changes ordered as Removals → Moves → Modifications → Additions | **Architecture delta** → Architecture |
 
 The pattern owns semantic primitives and its tighter budget; the type owns layout grammar. Use [`references/animation.md`](references/animation.md) only when motion is requested or materially clarifies ordered change; static remains the default.
 
@@ -268,29 +268,14 @@ Don't use the dot pattern when the diagram sits inside a product page, slide, or
 
 ### Mandatory connector rules
 
-These six rules are **non-negotiable**. Run the pre-output checklist (§9) to verify before producing any diagram.
+These six rules are **non-negotiable**. Run the pre-output checklist (§9) before producing any diagram.
 
-1. **Rounded right-angle (orthogonal) connectors are mandatory.** Never use diagonal `<line>` or straight slanted paths between nodes that don't share an x or y axis. Every bend must be a quarter-arc with `r=8` (or `r=6` minimum for tight layouts). See `references/type-architecture.md` for the elbow-path formula. Reserve plain straight `<line>` only for connections whose endpoints share the same x or y coordinate. Diagonal connectors are an automatic fail.
-
-2. **Label-to-connector margin: 6–10px gap, always.** A label must never sit *on* its arrow — the connector must remain visible. Place the label centered above (or beside, for vertical segments) the line with a **minimum 6px gap** between the bottom of the label's mask rect and the connector stroke. The opaque mask rect prevents the arrow from bleeding through, but the *visible* gap between mask edge and line preserves the reader's ability to trace the connection. If the label is large enough that 6px feels cramped, push it to 8–10px. Never let the mask rect touch or overlap the stroke.
-
-3. **No overlapping connectors.** Two connectors must never share the same stroke path, run parallel on top of each other, or be drawn on top of each other for any segment. When two orthogonal arrows must cross at a single point, apply the **bridge / hop** primitive (see `references/type-architecture.md` § Crossing arrows). When two arrows naturally want to overlap, offset their routing by ≥12px so each line is independently traceable. If you find yourself stacking connectors, redesign the layout — it means two nodes are too close, or the diagram is over budget (split into overview + detail).
-
-4. **Shared edge → fan the attach points.** When two or more connectors enter or exit the *same edge* of a box, each must have its own distinct attach point along that edge — **no two connectors may share a single point on a box**. Spread the attach points evenly along the edge with **≥12px** between adjacent points (8px minimum for very small boxes). Routing rules:
-   - For N connectors on an edge of length L, attach point `k` (1..N) sits at offset `L * k / (N + 1)` from the edge's leading corner.
-   - When the connectors fan out to destinations on different sides, route each one orthogonally from its own attach point — no merging strokes near the box.
-   - When two parallel connectors run in the same direction, keep them ≥12px apart along their entire length, not just at the attach point. Each arrow must remain independently traceable end-to-end.
-
-   No connector may hide another. If you can't tell two arrows apart at a glance, the layout has failed.
-
-5. **A connector must not pass behind a box that isn't its source or destination — except when the box is geometrically unavoidable on a direct orthogonal path.** Reroute around intervening boxes by default. The only legitimate exception is when a cross-cutting node (e.g., a footer service, a horizontal layer bar) physically sits between the connector's source and destination on the only straight path between them — for example, a `METRICS` arrow exiting an `Observability` footer bar and rising into a zone above must cross the `Active Directory` footer bar that sits between them. In that exception:
-   - The stroke must be **dashed** (e.g., `stroke-dasharray="4,3"`) to signal "transit, not interaction" — it tells the reader the intervening box is not an endpoint.
-   - The label sits at the **visible end** of the connector (typically near the source) so it doesn't fall behind the intervening box.
-   - No marker (arrowhead) may land on the intervening box's edge — the marker resolves at the true destination only.
-
-   When in doubt, reroute. The exception exists for the narrow case where rerouting is geometrically impossible, not as a shortcut to avoid layout work.
-
-6. **A label mask must not overlap a node drawn after it.** Rule 2 keeps the label off its own connector; this one keeps it off the boxes. Because nodes are painted after labels, a mask that lands partly inside a node is covered by the node fill and the text renders as a fragment sitting on the node border. Place the label on a segment of the connector that runs through open canvas — for a connector leaving a node's right edge, that means clearing the node's `x + width` before the mask starts. A mask fully *inside* a node is a badge chip and is fine; a mask overlapping a zone container is fine too, since zones are painted first. From a repository checkout, verify with `python3 <repo-root>/scripts/verify-geometry.py <file>`.
+1. **Rounded right-angle (orthogonal) connectors are mandatory.** Never use diagonal `<line>` or slanted paths between off-axis nodes. Every bend uses a quarter-arc with `r=8` (`r=6` min for tight layouts; see `references/type-architecture.md`). Reserve straight `<line>` only for co-axial endpoints.
+2. **Label-to-connector margin: 6–10px gap, always.** Place labels centered above horizontal segments (or beside vertical segments) with a **≥6px visible gap** (8–10px for larger labels) between the opaque mask rect and the connector stroke. Never let the mask rect touch or overlap the stroke.
+3. **No overlapping connectors.** Never share stroke paths or stack parallel segments. Use the **bridge / hop** primitive (`references/type-architecture.md`) at single-point crossings, or offset parallel routes by ≥12px; otherwise split into overview + detail.
+4. **Shared edge → fan the attach points.** Multiple connectors on one edge require distinct attach points **≥12px** apart (8px min on tiny boxes; for N connectors on edge length L, place point `k` at `L * k / (N + 1)`), routed orthogonally ≥12px apart end-to-end with no merged strokes.
+5. **Never pass behind a non-endpoint box — unless geometrically unavoidable on a direct orthogonal path.** Reroute around intervening boxes by default. Only when a cross-cutting bar sits unavoidably on the sole straight path: use a **dashed** stroke (`stroke-dasharray="4,3"`), place the label at the **visible end**, and land the arrowhead strictly on the true destination.
+6. **A label mask must not overlap a node drawn after it.** Nodes paint after labels, so a mask straddling a later node is clipped by its fill. Place labels on open-canvas segments clearing `x + width` (badge chips fully inside a node and eyebrows on earlier-painted zones are legal). Verify with `python3 <repo-root>/scripts/verify-geometry.py <file>` or `python3 scripts/self_check.py --verify-geometry <file>`.
 
 ### Node box — full pattern
 
@@ -512,7 +497,7 @@ Every diagram ships in three variants (see `assets/`):
 | **Minimal light** (default) | `assets/template.html`, `example-<type>.html` | Screenshot-ready. Diagram + title. Warm paper. |
 | **Minimal dark** | `assets/template-dark.html`, `example-<type>-dark.html` | Dark mode sites, slides, high-contrast posts. |
 | **Full editorial** | `assets/template-full.html`, `example-<type>-full.html` | Long-form posts where the diagram is the hero. |
-| **Publication Manual** (2-column) | `assets/template-manual.html` | Multi-section guides, runbooks and portal indexes that embed several diagrams plus tables and code. Sticky top-nav, 260px sticky `toc-sidebar` + `1fr` article, `report-meta-badge`, `metadata-grid`, `callout-box`, packaged `diagram-container` figures. One-column `template-full.html` is for single-hero diagrams only. |
+| **Publication Manual** (2-column) | `assets/template-manual.html` | Multi-section guides, runbooks, and portal indexes embedding multiple diagrams, tables, and code. One-column `template-full.html` is for single-hero diagrams only. See [publication-manual.md](references/publication-manual.md). |
 | **Consultant special** (quadrant only) | `example-quadrant-consultant.html` | BCG/McKinsey-style 2×2 scenario matrix. Clinical sans-serif, white bg, bold blue double-ended axes, named scenario cells. See [type-quadrant.md](references/type-quadrant.md#consultant-special-2x2-scenario-matrix). |
 
 **Sketchy variant** (optional, applied to any of the above) — see [primitive-sketchy.md](references/primitive-sketchy.md). SVG turbulence filter wobbles strokes for a hand-drawn feel. Good for essays, not for technical docs.
@@ -523,26 +508,7 @@ Every diagram ships in three variants (see `assets/`):
 
 ### Publication Manual layout (`assets/template-manual.html`)
 
-Start from `assets/template-manual.html` for any document that has more than one section or more than one diagram. Required structure, in order:
-
-1. `nav.top-nav` — brand link to `index.html` plus sibling-document buttons; the active page carries `class="current"`.
-2. `div.layout-frame` — CSS grid `260px 1fr`; collapses to one column under 900px.
-3. `aside.toc-sidebar` — sticky, lists every `section[id]` of the article; use `.toc-group` labels for grouped portals.
-4. `article` — `div.report-meta-badge` (doc ID, edition), `h1.report-title`, `div.metadata-grid` (`.meta-item` label/value pairs), `div.callout-box` with the one-paragraph summary.
-5. Sections — `h2.section-heading`, then figures packaged as `div.diagram-container` > `div.diagram-header` (figure number and `VISUAL PATTERN` tag) + `div.diagram-viewport` (inline `<svg>`) + `div.diagram-caption` (takeaway and link to the standalone `diagrams/<slug>.svg`). Tables go in `div.table-container`; commands in dark `pre > code`.
-6. `footer` — document reference line.
-
-Rules: keep every inline SVG unchanged when migrating an older page; keep existing section and row anchor IDs (`#skill-*`, `#os-*`, `#fig-*`) and cross-links valid; vary only `--doc-accent` / `--doc-accent-tint` per document; add no external framework. The one permitted script is the canonical `<script data-manual-controls>` copied verbatim from the template. Verify with `python3 scripts/self_check.py <file>` plus a check that every local `href` and `#anchor` resolves.
-
-**Interactive controls** (all inert without JS; the page reads complete as static HTML):
-
-- `[data-toc-toggle]` in `.top-nav` collapses the sidebar to a full-width article (also the `[` key); omit it on single-column pages. `[data-theme-toggle]` pins `html[data-theme="light"|"dark"]`; both persist in `localStorage`.
-- **Adaptive Dark/Light `--svg-*` diagram tokens:** Every Publication Manual declares the semantic `--svg-*` token set (`--svg-paper`, `--svg-surface`, `--svg-panel`, `--svg-ink`, `--svg-muted`, `--svg-soft`, `--svg-rule`, `--svg-accent`, `--svg-accent-tint`, `--svg-green`, `--svg-green-tint`, `--svg-blue`, `--svg-blue-tint`, `--svg-purple`, `--svg-purple-tint`, `--svg-amber`, `--svg-amber-tint`, `--svg-red`, `--svg-red-tint`) in `:root`, `@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) }`, and `html[data-theme="dark"]`. `.diagram-viewport` uses `background: var(--svg-paper)` (never hardcoded `#f5f5f5`/`#ffffff`), and inline `<svg>` elements use `var(--svg-*, <fallback>)` for fills, strokes, text, and markers so dark theme flips diagrams seamlessly.
-- Exactly one document-level `<dialog data-diagram-modal>` (with one `[data-diagram-modal-body]`, a `[data-diagram-close]`) per page. Each figure root gets exactly one `[data-diagram-open]` in its `.diagram-header`; the controller reparents the live root into the dialog and back, so SVG ids stay unique.
-- Ordered-narrative figures use `data-motion-mode="step"` (3..7 steps, at most 2 items per step, loads complete at `step = count`) with one `[data-motion-controls]` bar and one `.diagram-annotation-banner[data-motion-status]` inside the root but outside the controls. Matrices, legends and inventories use `data-motion-mode="none" data-step-count="0"` with the opener only.
-- `.is-current` emphasis is an accent stroke plus contrast, never a shadow or glow. One `<noscript>`, one `@media print` and one `prefers-reduced-motion: reduce` block per document.
-
-**Controller update procedure:** edit the controller only in `assets/template-manual.html`, then `python3 scripts/sync_manual_controls.py --write <pages>`, `--check <template> <pages>` (prints `DIVERGENT: <path>`), `python3 scripts/check_manual_selectors.py <pages>` (prints `OK` or one violation per line) and `self_check.py` over every page.
+Load [`references/publication-manual.md`](references/publication-manual.md) for the 2-column sticky TOC structure, adaptive `--svg-*` Dark/Light token polarity, `<dialog data-diagram-modal>` lightbox, and ordered-narrative `step` walkthrough rules. Edit the canonical `<script data-manual-controls>` controller only in `assets/template-manual.html`, then propagate and check with `scripts/sync_manual_controls.py`, `scripts/check_manual_selectors.py`, and `scripts/self_check.py`.
 
 ### To create a new diagram
 
@@ -587,14 +553,11 @@ Two consequences: the size preset sets the `viewBox` **and** the type ramp (a sl
 Always produce a single self-contained `.html` file:
 
 - Embedded CSS (no external except Google Fonts)
-- Inline SVG (no external images)
+- Inline SVG (no external images; never `<object>`, `<img>`, or `<iframe>`)
 - Static by default; minimal inline JavaScript only for explicit animation controls/state
-- Output location: In repositories with an established documentation tree, save diagrams directly under the designated docs directory (e.g. `docs/diagrams/`) rather than the workspace root.
-- **Multi-diagram documentation deliverable pattern**: When creating a composite HTML document covering multiple system diagrams, embed each `<svg>` inline directly into the document. Never use `<object>`, `<img>`, or `<iframe>` tags (strictly flagged by `self_check.py`). Provide external links to standalone `.svg` copies saved under `docs/diagrams/<slug>.svg` for independent asset reuse.
-- **Multi-document system architecture pattern**: When documenting multi-dimensional systems (e.g., skill lifecycles, runtime boot sequences, capability matrices), separate concerns into specialized standalone HTML documents (e.g. `<domain>-lifecycle.html`, `<domain>-boot-sequence.html`, `<domain>-matrix.html`) anchored by a master Portal index (`index.html`) rather than cramming divergent scopes into a single unreadable page. Each document embeds its own focused inline SVG diagrams while providing download links to standalone `.svg` copies in `docs/diagrams/`. When the user asks to document and link multiple named pillars or ecosystems (e.g., OpenSpec, Matt Pocock, Crew), build a dedicated HTML guide and standalone SVG set for **every named pillar** — never use an existing generic workflow manual as a stand-in for a requested pillar. Assign stable row anchors (`id="<prefix>-<slug>"`) in catalog tables so counterpart columns cross-link directly (`<sibling>-guide.html#<id>`), update any total asset counters in `index.html`, and verify every cross-file `href` and `#anchor` target alongside `self_check.py`.
-- **Deep-dive component visual decomposition pattern**: Never substitute a single high-level overview diagram and dense prose walls for architectural deep-dives. When documenting complex platforms, pair the top-level topology with dedicated, specialized deep-dive diagrams for each major component, selecting the most expressive visual type from the 39-type catalog (e.g. Sequence for multi-agent choreography, Paved Road for security boundaries, State Machine/Flowchart for decision & specification contracts, Flywheel Loop for memory, Deployment for physical hardware/sensors). Provide an Interactive Component Explorer navigation bar with component jump links, embed every diagram inline directly, and save standalone SVG copies under `docs/diagrams/<slug>.svg` for independent asset reuse.
-- **Publication Manual output pattern**: A multi-section deliverable (guide, runbook, portal index) uses the 2-column `assets/template-manual.html` structure documented in §10 rather than the single-column `template-full.html`. Every figure is packaged in a `diagram-container` with header, viewport and caption; the portal `index.html` is a Publication Manual whose sticky `toc-sidebar` groups all documents and standalone SVG assets by domain.
-- **Link preconnect ban**: Do not include `<link rel="preconnect">` tags for font domains; use only the single authorized Google Fonts stylesheet `<link>` to satisfy single-file and remote-reference safety in `self_check.py`.
+- Save diagrams directly under the repository's documentation tree (e.g. `docs/diagrams/`) rather than the workspace root.
+- **Publication Manual & multi-document portals**: Multi-section guides, runbooks, component deep-dives, and portal indexes (`index.html`) use the 2-column `assets/template-manual.html` layout, inline `<svg>` figures paired with standalone `docs/diagrams/<slug>.svg` exports, and cross-linked pillar anchors documented in [`references/publication-manual.md`](references/publication-manual.md).
+- **Link preconnect ban**: Do not include `<link rel="preconnect">` tags; use only the single authorized Google Fonts stylesheet `<link>` to satisfy `scripts/self_check.py`.
 
 Renders correctly in any modern browser. Motion-enabled output must render its complete meaning without JavaScript; under `prefers-reduced-motion: reduce` it shows the complete static frame and hides/disables playback controls.
 

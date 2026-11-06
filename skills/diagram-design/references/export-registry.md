@@ -28,6 +28,7 @@ Applies only to diagrams using the Traceable block decomposition pattern (Tree n
       "name": "Payment Gateway",
       "output": "Settled transaction record",
       "constraint": "Every transaction reaches exactly one terminal state",
+      "rev": "b353e89add90bdce3dcdc8d69fa8f96d29ff54b9",
       "impl": "src/payments/gateway/"
     },
     {
@@ -38,7 +39,8 @@ Applies only to diagrams using the Traceable block decomposition pattern (Tree n
       "output": "Authorization token or decline",
       "constraint": "Never persists a raw card number",
       "assumption": "Runs behind the PCI-scoped boundary",
-      "impl": "src/payments/authorization/"
+      "rev": "b353e89add90bdce3dcdc8d69fa8f96d29ff54b9",
+      "impl": "src/payments/authorization/card.py#L10-L42"
     }
   ]
 }
@@ -48,7 +50,7 @@ Applies only to diagrams using the Traceable block decomposition pattern (Tree n
 - `blocks` — one entry per node carrying `data-block-id`, in document order: the order the matched nodes appear in the source file, never re-sorted by parent. A tree authored row by row (every Tier 1 node, then every Tier 2 node) exports in that row order; only a tree authored depth-first exports depth-first.
 - `id`, `name` — always present; every block in the pattern requires both attributes.
 - `parent` — present only for non-root blocks, mirroring `data-block-parent`'s own absent-means-root convention. Omitted, never `null`, for a root block.
-- `input`, `output`, `constraint`, `assumption`, `impl` — present only when the matching `data-block-*` attribute is present on that node. Omit the key entirely rather than writing an empty string.
+- `input`, `output`, `constraint`, `assumption`, `rev`, `impl` — present only when the matching `data-block-*` attribute (or an ancestor-inherited `data-block-rev`) is present for that node. Omit the key entirely rather than writing an empty string. `data-block-rev` is root-inheritable: a block's own `data-block-rev="<40-hex-sha>"` overrides any enclosing ancestor's `data-block-rev`; otherwise the block inherits `data-block-rev` from the nearest enclosing ancestor (`<html>`, `<body>`, `<article>`, `[data-motion-root]`, `<svg>`, or `<g>`).
 
 No other keys, and no generation timestamp: the registry is meant to be regenerated on demand and diffed in version control, and a live-clock field would make two runs over identical source produce different output. Provenance and dating come from git history, not the file's own content.
 
@@ -56,10 +58,11 @@ No other keys, and no generation timestamp: the registry is meant to be regenera
 
 1. Read the source HTML file.
 2. Find every element carrying a `data-block-id` attribute. Nodes without it aren't part of the pattern — skip them silently, including in a diagram that mixes pattern and non-pattern Tree nodes.
-3. For each matched node, read `data-block-id`, `data-block-parent`, `data-block-name`, `data-block-input`, `data-block-output`, `data-block-constraint`, `data-block-assumption`, `data-block-impl` — whichever are present. Map `data-block-name` to the JSON key `name`; map the rest by dropping the `data-block-` prefix.
+3. For each matched node, read `data-block-id`, `data-block-parent`, `data-block-name`, `data-block-input`, `data-block-output`, `data-block-constraint`, `data-block-assumption`, `data-block-rev` (resolving nearest-ancestor inheritance when omitted on the node itself), and `data-block-impl` — whichever are present. Map `data-block-name` to the JSON key `name`; map `data-block-rev` (effective) to `rev`; map the rest by dropping the `data-block-` prefix.
 4. Preserve attribute values verbatim — no trimming beyond surrounding whitespace, no case changes, no re-formatting of the `impl` path.
 5. Assemble the `blocks` array in document order, as defined under *JSON schema* above.
 6. Write to `<basename>.registry.json` next to the source (e.g. `example-tree-block-decomposition.html` → `example-tree-block-decomposition.registry.json`). Honour an explicit `--output` path if the user provided one to the parent export command.
+7. When verifying citations against a local repository checkout, run `python3 scripts/verify-block-registry.py --repo-root <dir> <html-file>` to check `data-block-rev` commits and `data-block-impl="<repo-rel-posix-path>[#L<start>[-L<end>]]"` trees, blobs, and line bounds offline via `git --no-replace-objects cat-file --batch`.
 
 ## Edge cases
 

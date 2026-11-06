@@ -32,6 +32,8 @@ PATTERN_NAMES = (
     "Governance / control catalog",
     "Compensating security layers",
     "Traceable block decomposition",
+    "Execution trace waterfall",
+    "Architecture delta",
 )
 PATTERN_FIELDS = (
     "Selection triggers:",
