@@ -1,6 +1,6 @@
 ---
 name: diagram-design
-description: "Create branded HTML, SVG, and architecture charts."
+description: "Create branded diagrams, SVG, and visual charts."
 license: MIT
 metadata:
   version: "2.6"
