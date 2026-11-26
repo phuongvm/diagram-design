@@ -10,7 +10,7 @@ metadata:
 
 Create visual diagrams as self-contained HTML files with inline SVG and CSS, following an opinionated editorial design system.
 
-Thirty-nine visual types. Semantic patterns describe behavior independently; type references describe layout. Details load from `references/` only when selected.
+Fifty-one visual types. Semantic patterns describe behavior independently; type references describe layout. Details load from `references/` only when selected.
 
 ---
 
@@ -49,7 +49,7 @@ Applied to schematics:
 
 ## 2. When to Use
 
-Use for any of the 39 visual types (§3) when a reader will learn more from a visual than from prose, a table, or a bulleted list.
+Use for any of the 51 visual types (§3) when a reader will learn more from a visual than from prose, a table, or a bulleted list.
 
 **Don't use for:**
 
@@ -79,18 +79,22 @@ When behavior, state, enforcement, or risk carries the meaning, first load [`ref
 
 The pattern owns semantic primitives and its tighter budget; the type owns layout grammar. Use [`references/animation.md`](references/animation.md) only when motion is requested or materially clarifies ordered change; static remains the default.
 
-### Visual-type guide (39)
+### Visual-type guide (51)
 
 | If you're showing… | Use | Reference |
 |---|---|---|
 | Components + connections in a system | **Architecture** | [type-architecture.md](references/type-architecture.md) |
 | Legacy IT landscape grouped by phase/department; documents the *before* state in modernization proposals | **IT current-state** | [type-it-state.md](references/type-it-state.md) |
+| Structural change between synchronized Before / After topologies, with a Changes ledger | **Architecture delta** | [type-architecture-delta.md](references/type-architecture-delta.md) |
 | Decision logic with branches | **Flowchart** | [type-flowchart.md](references/type-flowchart.md) |
+| A short ordered method with numbered stages, icons, and brief explanations | **Steps** | [type-steps.md](references/type-steps.md) |
 | Time-ordered messages between actors | **Sequence** | [type-sequence.md](references/type-sequence.md) |
 | States + transitions + guards | **State machine** | [type-state.md](references/type-state.md) |
 | Entities + fields + relationships | **ER / data model** | [type-er.md](references/type-er.md) |
 | Events positioned in time | **Timeline** | [type-timeline.md](references/type-timeline.md) |
 | Cross-functional process with handoffs | **Swimlane** | [type-swimlane.md](references/type-swimlane.md) |
+| What the customer does vs what the service hides, across stages, with a line of visibility | **Service blueprint** | [type-service-blueprint.md](references/type-service-blueprint.md) |
+| Commands, resulting events, and read models across ordered stages | **Event modeling** | [type-event-modeling.md](references/type-event-modeling.md) |
 | Two-axis positioning / prioritization | **Quadrant** | [type-quadrant.md](references/type-quadrant.md) |
 | Multiple entities scored across 3–5 quantitative criteria | **Radar / Spider** | [type-radar.md](references/type-radar.md) |
 | One quantitative series across cyclic categories; angle=category, radius=magnitude | **Polar chart** | [type-polar.md](references/type-polar.md) |
@@ -99,12 +103,18 @@ The pattern owns semantic primitives and its tighter budget; the type owns layou
 | Parent → children relationships | **Tree** | [type-tree.md](references/type-tree.md) |
 | Human/agent/team ownership, reporting, routing, escalation | **Org chart** | [type-org-chart.md](references/type-org-chart.md) |
 | Stacked abstraction levels | **Layer stack** | [type-layers.md](references/type-layers.md) |
+| Parts of one object pulled apart along one axis: a teardown, an unboxing, assembly order | **Exploded axonometric** | [type-exploded.md](references/type-exploded.md) |
+| One floor or site seen from above at an angle: rooms with furniture, buildings by phase | **Axonometric plan** | [type-axonometric-plan.md](references/type-axonometric-plan.md) |
 | Overlap between sets | **Venn** | [type-venn.md](references/type-venn.md) |
 | Ranked hierarchy or conversion drop-off | **Pyramid / funnel** | [type-pyramid.md](references/type-pyramid.md) |
 | Quantitative comparison across categories | **Bar chart** | [type-bar.md](references/type-bar.md) |
+| A start total bridged to an end total by signed contributions (budget bridge, headcount deltas) | **Waterfall** | [type-waterfall.md](references/type-waterfall.md) |
+| Cross-tabulated data; fill encodes value per cell | **Heatmap** | [type-heatmap.md](references/type-heatmap.md) |
+| One bounded whole counted in equal discrete units out of 100 | **Unit Grid** | [type-unit-grid.md](references/type-unit-grid.md) |
 | Part-of-whole where the relative sizes are the story | **Treemap** | [type-treemap.md](references/type-treemap.md) |
 | Continuous trends over time, change between exactly two states (slopegraph), one distribution per series (ridgeline), or rank movement across several snapshots (bump) | **Line chart** | [type-line.md](references/type-line.md) |
 | Tasks and phases on a timeline | **Gantt** | [type-gantt.md](references/type-gantt.md) |
+| Task precedence, critical paths and total float from durations | **Schedule network** | [type-schedule-network.md](references/type-schedule-network.md) |
 | Distribution and correlation between two variables, three with area-sized marks (bubble), or one variable with a dot per item (beeswarm) | **Scatter plot** | [type-scatter.md](references/type-scatter.md) |
 | End-to-end data stack on a container cluster | **High-Level** | [type-high-level.md](references/type-high-level.md) |
 | Multi-actor sequential process with data handoffs | **Process** | [type-process.md](references/type-process.md) |
@@ -114,10 +124,12 @@ The pattern owns semantic primitives and its tighter budget; the type owns layou
 | Per-role / per-component access permissions matrix | **DP security matrix** | [type-dp-security-matrix.md](references/type-dp-security-matrix.md) |
 | A quantity splitting and merging across stages, band width = amount | **Sankey** | [type-sankey.md](references/type-sankey.md) |
 | Causes of one observed effect, grouped by category (root-cause analysis) | **Fishbone** | [type-fishbone.md](references/type-fishbone.md) |
+| Source requirements, design elements, and tests linked by stable IDs, with gaps explicit | **Requirement traceability** | [type-requirement-traceability.md](references/type-requirement-traceability.md) |
 | Value chain against evolution — what to build, buy, and what is moving | **Wardley map** | [type-wardley.md](references/type-wardley.md) |
 | Work-in-progress by state, with WIP limits and blocked items | **Kanban** | [type-kanban.md](references/type-kanban.md) |
 | What a person does across stages of an experience, and how it feels | **User journey** | [type-journey.md](references/type-journey.md) |
 | Where software runs — zones, hosts, artifacts, replicas, ports | **Deployment** | [type-deployment.md](references/type-deployment.md) |
+| Branching models, release and hotfix flows, backports, rebase vs merge | **Git graph** | [type-git-graph.md](references/type-git-graph.md) |
 | What depends on what, with fan-in and cycles a tree cannot express | **Dependency graph** | [type-dependency.md](references/type-dependency.md) |
 | Classes with operations, inheritance, composition (other UML routes elsewhere) | **UML class** | [type-uml-class.md](references/type-uml-class.md) |
 | Narrative backbone sliced into releases, with the cut line | **Story map** | [type-story-map.md](references/type-story-map.md) |
@@ -322,7 +334,7 @@ Quick check: if a coordinate ends in 1, 2, 3, 5, 6, 7, 9 — fix it.
 
 ### Complexity budget (per diagram)
 
-Default limits: max **9 nodes**, **12 arrows/transitions**, **2 coral focal elements**, **2 annotation callouts**, and **8 motion steps**. For the full 39-type per-diagram complexity table (sequence, swimlane, ER, radar, polar, sankey, fishbone, wardley, kanban, deployment, UML, story map, db schema), see [`references/publication-manual-and-budgets.md`](references/publication-manual-and-budgets.md). If you exceed the budget, split into two diagrams (overview + detail).
+Default limits: max **9 nodes**, **12 arrows/transitions**, **2 coral focal elements**, **2 annotation callouts**, and **8 motion steps**. For per-type complexity budgets, load the matching `references/type-<slug>.md` guide (and `references/layout-budget.md` when applicable). If you exceed the budget, split into two diagrams (overview + detail).
 
 ### Page layout
 
@@ -417,7 +429,7 @@ Every diagram ships in three variants (see `assets/`):
 
 ### Publication Manual layout (`assets/template-manual.html`)
 
-Start from `assets/template-manual.html` for any multi-section or multi-diagram guide (`nav.top-nav` → `div.layout-frame` `260px 1fr` → sticky `aside.toc-sidebar` → `article` with `div.diagram-container` figures and adaptive `--svg-*` Light/Dark tokens). Sync controller updates with `python3 scripts/sync_manual_controls.py`, `python3 scripts/check_manual_selectors.py`, and `python3 scripts/self_check.py`. Full DOM contract, `--svg-*` token list, and modal/walkthrough rules are in [`references/publication-manual-and-budgets.md`](references/publication-manual-and-budgets.md).
+Start from `assets/template-manual.html` for any multi-section or multi-diagram guide (`nav.top-nav` → `div.layout-frame` `260px 1fr` → sticky `aside.toc-sidebar` → `article[data-doc-archetype]` with `div.diagram-container` figures and adaptive `--svg-*` Light/Dark tokens). Declare one of the 5 canonical archetypes (`system-design`, `user-operator-guide`, `runbook-migration`, `data-pipeline`, `strategy-analysis`) and its ordered mandatory progressive diagram lens series per [`references/diagram-series-matrix.md`](references/diagram-series-matrix.md) and [`references/publication-manual.md`](references/publication-manual.md). Sync controller updates with `python3 scripts/sync_manual_controls.py`, `python3 scripts/check_manual_selectors.py`, `python3 scripts/visual_audit.py`, and `python3 scripts/self_check.py`.
 
 ### To create a new diagram
 

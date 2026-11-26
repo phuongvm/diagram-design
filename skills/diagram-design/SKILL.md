@@ -8,7 +8,7 @@ metadata:
 
 # Diagram Design
 
-Create self-contained HTML diagrams with inline SVG and CSS (`paper` `#f5f5f5`, `ink` `#2d3142`, `accent` `#eb6c36`, `muted` `#4f5d75`, `link` `#2e5aa8`). Full 39-type guide and checklists: [`references/diagram-design-full.md`](references/diagram-design-full.md).
+Create self-contained HTML diagrams with inline SVG and CSS (`paper` `#f5f5f5`, `ink` `#2d3142`, `accent` `#eb6c36`, `muted` `#4f5d75`, `link` `#2e5aa8`). Full 51-type guide and checklists: [`references/diagram-design-full.md`](references/diagram-design-full.md).
 
 ## 0. Style-Guide Gate
 
@@ -16,7 +16,7 @@ Check `.diagram-design` per [`references/profiles.md`](references/profiles.md) a
 
 ## 1. When to Use
 
-Use for any of the 39 visual types when a schematic clarifies structure, state, flow, or topology better than prose. Route behavioral triggers via [`references/semantic-patterns.md`](references/semantic-patterns.md) first, then load the matching type guide in `references/`. Multi-section guides (`docs/*.html`, `docs/index.html`) use [`references/publication-manual.md`](references/publication-manual.md).
+Use for any of the 51 visual types when a schematic clarifies structure, state, flow, or topology better than prose. Route behavioral triggers via [`references/semantic-patterns.md`](references/semantic-patterns.md) first, then load the matching type guide in `references/`. Multi-section guides (`docs/*.html`, `docs/index.html`) use [`references/publication-manual.md`](references/publication-manual.md).
 
 ## 2. Core Rules
 
